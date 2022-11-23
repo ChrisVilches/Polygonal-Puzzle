@@ -1,5 +1,9 @@
 # Polygonal Puzzle
 
+Geometric algorithm that finds the maximum possible length of the common boundary of two polygons when they are optimally placed.
+
+## Overview
+
 A Rust solution for this problem:
 
 https://open.kattis.com/problems/puzzle2
