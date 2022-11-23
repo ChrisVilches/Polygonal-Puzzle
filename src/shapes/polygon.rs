@@ -1,5 +1,6 @@
 use crate::{
   constants::EPS,
+  iterators::{edge_iterator::EdgeIterator, vertex_iterator::VertexIterator},
   traits::{
     common_boundary::CommonBoundary,
     intersection::{Intersection, IntersectionHeuristic},
@@ -9,10 +10,8 @@ use crate::{
 
 use super::{point::Point, segment::Segment};
 
-// TODO: Add indexing by passing the index to the vertices field.
 #[derive(Clone)]
 pub struct Polygon {
-  // TODO: Make this private, and just use the "vertex_at" or implement the index operator.
   pub vertices: Vec<Point>,
 }
 
@@ -52,32 +51,35 @@ impl IntersectionHeuristic for Polygon {
         }
       }
     }
-    return false;
+
+    false
   }
 }
 
 impl CommonBoundary for Polygon {
   fn common_boundary(&self, other: &Self) -> f64 {
-    let mut total = 0_f64;
-
-    // TODO: Make this functional
-    for i in 0..self.len() {
-      // TODO: Convert edge creation to a polygon method.
-      //       Maybe use in other places as well.
-      let edge1 = Segment::new(self.vertices[i], self.vertex_at((i as i32) + 1));
-      for j in 0..other.len() {
-        let edge2 = Segment::new(other.vertices[j], other.vertex_at((j as i32) + 1));
-        total += edge1.common_boundary(&edge2);
-      }
-    }
-
-    total
+    self
+      .edges()
+      .flat_map(|e1: Segment| {
+        other
+          .edges()
+          .map(move |e2: Segment| e1.common_boundary(&e2))
+      })
+      .sum()
   }
 }
 
 impl Polygon {
   pub fn new(vertices: Vec<Point>) -> Self {
     Self { vertices }
+  }
+
+  pub fn edges(&self) -> EdgeIterator {
+    EdgeIterator::new(self)
+  }
+
+  pub fn vertices(&self) -> VertexIterator {
+    VertexIterator::new(self)
   }
 
   pub fn len(&self) -> usize {
@@ -90,13 +92,22 @@ impl Polygon {
     self.vertices[i as usize]
   }
 
+  pub fn vertices_at(&self, i: i32) -> (Point, Point, Point) {
+    let n = self.len() as i32;
+    let i = (i + (n << 10)) % n;
+    (
+      self.vertex_at(i - 1),
+      self.vertex_at(i),
+      self.vertex_at(i + 1),
+    )
+  }
+
   pub fn negate(&self) -> Self {
     Self {
       vertices: self.vertices.iter().map(Point::negate).collect(),
     }
   }
 
-  // TODO: Transform this into an iterator and yield all rotations?
   pub fn rotations(&self) -> Vec<Polygon> {
     let polygon = &mut self.clone();
     let mut polygons = vec![];
@@ -125,31 +136,20 @@ impl Polygon {
   }
 
   fn intersection_aux(&self, other: &Self, i: i32, j: i32) -> bool {
-    let a0 = self.vertex_at(i - 1);
-    let a1 = self.vertex_at(i);
-    let a2 = self.vertex_at(i + 1);
-
-    let b0 = other.vertex_at(j - 1);
-    let b1 = other.vertex_at(j);
-    let b2 = other.vertex_at(j + 1);
+    let (a0, a1, a2) = self.vertices_at(i);
+    let (b0, b1, b2) = other.vertices_at(j);
 
     if Segment::new(a1, a2).intersects(&Segment::new(b1, b2)) {
       return true;
     }
 
     if Segment::new(b1, b2).contains_except_endpoints(a1) {
-      if orientation(b1, b2, a2) == 1 {
-        return true;
-      }
-      if orientation(b1, b2, a0) == 1 {
+      if orientation(b1, b2, a2) == 1 || orientation(b1, b2, a0) == 1 {
         return true;
       }
     }
     if Segment::new(a1, a2).contains_except_endpoints(b1) {
-      if orientation(a1, a2, b2) == 1 {
-        return true;
-      }
-      if orientation(a1, a2, b0) == 1 {
+      if orientation(a1, a2, b2) == 1 || orientation(a1, a2, b0) == 1 {
         return true;
       }
     }

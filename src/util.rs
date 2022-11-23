@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::{constants::EPS, shapes::point::Point};
 
 #[inline]
@@ -22,9 +24,8 @@ pub fn angle(a: Point, b: Point) -> f64 {
 pub fn orientation(o: Point, a: Point, b: Point) -> i8 {
   let cross = (a - o).cross(b - o);
   if zero(cross) {
-    return 0;
-  }
-  if cross > 0_f64 {
+    0
+  } else if cross > 0_f64 {
     1
   } else {
     -1
@@ -37,5 +38,14 @@ pub fn max(a: f64, b: f64) -> f64 {
     a
   } else {
     b
+  }
+}
+
+#[inline]
+pub fn cmp(a: &f64, b: &f64) -> Ordering {
+  if a < b {
+    Ordering::Less
+  } else {
+    Ordering::Greater
   }
 }

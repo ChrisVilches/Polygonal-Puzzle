@@ -2,6 +2,7 @@ use crate::shapes::polygon::Polygon;
 use shapes::point::Point;
 use std::io;
 mod constants;
+mod iterators;
 mod polygon_matcher;
 mod shapes;
 mod traits;

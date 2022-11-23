@@ -45,7 +45,6 @@ impl Point {
     self.x * other.y - self.y * other.x
   }
 
-  // TODO: Can this be a == overload?
   pub fn equal(&self, other: Self) -> bool {
     equal(self.x, other.x) && equal(self.y, other.y)
   }

@@ -1,11 +1,10 @@
 use rayon::prelude::*;
-use std::cmp::Ordering;
 
 use crate::{
   constants::EPS,
   shapes::{polygon::Polygon, segment::Segment},
   traits::{common_boundary::CommonBoundary, intersection::IntersectionHeuristic},
-  util::{max, orientation},
+  util::{cmp, max, orientation},
 };
 
 fn range_contains(a: f64, b: f64, x: f64) -> bool {
@@ -20,42 +19,37 @@ fn collect_shifts(
   polygon_edges: &Polygon,
   polygon_vertices: &Polygon,
   right: bool,
-  shifts: &mut Vec<f64>,
   max_shift: f64,
-) -> () {
-  for i in 0..polygon_edges.len() {
-    let wall = Segment {
-      p: polygon_edges.vertices[i],
-      q: polygon_edges.vertex_at((i as i32) + 1),
-    };
+) -> Vec<f64> {
+  let mut shifts = vec![];
 
+  for wall in polygon_edges.edges() {
     if wall.is_horizontal() {
       continue;
     }
 
-    for j in 0..polygon_vertices.len() {
-      let v = polygon_vertices.vertices[j];
-      if !range_contains(wall.p.y, wall.q.y, v.y) {
+    for (v0, v1, v2) in polygon_vertices.vertices() {
+      if !range_contains(wall.p.y, wall.q.y, v1.y) {
         continue;
       }
 
-      let v0 = polygon_vertices.vertex_at((j as i32) - 1);
-      let v2 = polygon_vertices.vertex_at((j as i32) + 1);
-      if orientation(v0, v, v2) == -1 {
+      if orientation(v0, v1, v2) == -1 {
         continue;
       }
 
-      let point_left = Segment::new(v0, v).face_left() || Segment::new(v, v2).face_left();
+      let point_left = Segment::new(v0, v1).face_left() || Segment::new(v1, v2).face_left();
+
       if wall.face_right() && !point_left {
         continue;
       }
 
-      let point_right = Segment::new(v0, v).face_right() || Segment::new(v, v2).face_right();
+      let point_right = Segment::new(v0, v1).face_right() || Segment::new(v1, v2).face_right();
+
       if wall.face_left() && !point_right {
         continue;
       }
 
-      let mut x = wall.horizontal_distance(v);
+      let mut x = wall.horizontal_distance(v1);
       x = if right { x } else { -x };
 
       if EPS < x && x < max_shift - EPS {
@@ -63,23 +57,19 @@ fn collect_shifts(
       }
     }
   }
-}
 
-fn cmp(a: &f64, b: &f64) -> Ordering {
-  if a < b {
-    Ordering::Less
-  } else {
-    Ordering::Greater
-  }
+  shifts
 }
 
 fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> f64 {
   let mut polygon1 = polygon1;
   let max_shift = base1 + base2;
-  let mut shifts = vec![base1, base2];
-
-  collect_shifts(&polygon1, polygon2, true, &mut shifts, max_shift);
-  collect_shifts(polygon2, &polygon1, false, &mut shifts, max_shift);
+  let mut shifts = [
+    vec![base1, base2],
+    collect_shifts(&polygon1, polygon2, true, max_shift),
+    collect_shifts(polygon2, &polygon1, false, max_shift),
+  ]
+  .concat();
 
   shifts.par_sort_unstable_by(cmp);
 
@@ -108,18 +98,16 @@ fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) 
 }
 
 fn pairs(a: usize, b: usize) -> Vec<(usize, usize)> {
-  (0..a)
-    .flat_map(|i| (0..b).map(|j| (i, j)).collect::<Vec<(usize, usize)>>())
-    .collect::<Vec<(usize, usize)>>()
+  (0..a).flat_map(|i| (0..b).map(move |j| (i, j))).collect()
 }
 
-fn bases(polygon: &Polygon, rotations: &Vec<Polygon>) -> Vec<f64> {
+fn bases(polygon: &Polygon, rotations: &[Polygon]) -> Vec<f64> {
   (0..polygon.len())
     .map(|i| {
       let polygon = &rotations[i];
       polygon.vertices[i].dist(polygon.vertex_at((i + 1) as i32))
     })
-    .collect::<Vec<f64>>()
+    .collect()
 }
 
 pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
@@ -130,8 +118,8 @@ pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
     .collect::<Vec<Polygon>>();
   let rotations2 = polygon2.rotations();
 
-  let base1 = bases(&polygon1, &rotations1);
-  let base2 = bases(&polygon2, &rotations2);
+  let base1 = bases(polygon1, &rotations1);
+  let base2 = bases(polygon2, &rotations2);
 
   pairs(rotations1.len(), rotations2.len())
     .par_iter()
@@ -143,12 +131,6 @@ pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
         base2[*j],
       )
     })
-    .max_by(|a, b| {
-      if a < b {
-        Ordering::Less
-      } else {
-        Ordering::Greater
-      }
-    })
+    .max_by(cmp)
     .unwrap_or(0_f64)
 }
