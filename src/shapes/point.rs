@@ -5,6 +5,8 @@ use std::{
 
 use crate::util::equal;
 
+use super::segment::Segment;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Point {
   pub x: f64,
@@ -42,11 +44,20 @@ impl Sub for Point {
 impl FromStr for Point {
   type Err = String;
 
-  // TODO: No errors for now.
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    let mut iter = s.split(' ').map(|n| n.parse().unwrap());
-    let x = iter.next().unwrap();
-    let y = iter.next().unwrap();
+    let coordinates: Vec<f64> = s
+      .split(' ')
+      .map(str::parse)
+      .collect::<Result<Vec<f64>, std::num::ParseFloatError>>()
+      .map_err(|e| e.to_string())?;
+
+    let x = *coordinates
+      .first()
+      .ok_or("point string should have X value")?;
+    let y = *coordinates
+      .get(1)
+      .ok_or("point string should have Y value")?;
+
     Ok(Self { x, y })
   }
 }
@@ -69,6 +80,10 @@ impl Point {
       x: -self.x,
       y: -self.y,
     }
+  }
+
+  pub const fn seg(&self, other: Self) -> Segment {
+    Segment { p: *self, q: other }
   }
 
   pub fn rot_ccw(&self, t: f64) -> Self {

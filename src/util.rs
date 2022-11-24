@@ -32,7 +32,6 @@ pub fn orientation(o: Point, a: Point, b: Point) -> i8 {
   }
 }
 
-// TODO: Is this really counter clock wise?
 #[inline]
 pub fn ccw(o: Point, a: Point, b: Point) -> bool {
   orientation(o, a, b) == 1

@@ -7,6 +7,7 @@ use crate::{
   },
   util::{angle, ccw},
 };
+use std::{borrow::Borrow, str::FromStr};
 
 use super::{point::Point, segment::Segment};
 
@@ -71,6 +72,34 @@ impl CommonBoundary for Polygon {
 }
 
 impl Polygon {
+  /// # Errors
+  /// Parsing errors may occur.
+  pub fn from<I>(vertices_count: usize, lines: &mut I) -> Result<Self, String>
+  where
+    I: Iterator,
+    I::Item: Borrow<str>,
+  {
+    // TODO: I'm not so sure about this. There are too many unwraps.
+    //       My idea was to implement a way so that io::Lines and str::Lines work,
+    //       but they are different (one needs two unwraps, and the other one only needs one).
+    //
+    //       My guess is that this is actually OK, because if I delete the Borrow<str>, it probably wouldn't work
+    //       so that means this solution is (presumably) irreplaceable.
+    //
+    //       Maybe it can be improved a bit. Read this question again:
+    //
+    //       How to combine std::str::lines and std::io::lines?
+    //       https://stackoverflow.com/questions/37028476/how-to-combine-stdstrlines-and-stdiolines
+    let mut vertices: Vec<Point> = lines
+      .take(vertices_count)
+      .map(|line| Point::from_str(line.borrow()))
+      .collect::<Result<Vec<Point>, String>>()?;
+
+    vertices.reverse();
+
+    Ok(Self { vertices })
+  }
+
   pub fn new(vertices: Vec<Point>) -> Self {
     Self { vertices }
   }
@@ -144,14 +173,14 @@ impl Polygon {
     let (a0, a1, a2) = self.vertices_at(i);
     let (b0, b1, b2) = other.vertices_at(j);
 
-    if Segment::new(a1, a2).intersects(&Segment::new(b1, b2)) {
+    if a1.seg(a2).intersects(&b1.seg(b2)) {
       return true;
     }
 
-    if Segment::new(b1, b2).contains_except_endpoints(a1) && (ccw(b1, b2, a2) || ccw(b1, b2, a0)) {
+    if b1.seg(b2).contains_except_endpoints(a1) && (ccw(b1, b2, a2) || ccw(b1, b2, a0)) {
       return true;
     }
-    if Segment::new(a1, a2).contains_except_endpoints(b1) && (ccw(a1, a2, b2) || ccw(a1, a2, b0)) {
+    if a1.seg(a2).contains_except_endpoints(b1) && (ccw(a1, a2, b2) || ccw(a1, a2, b0)) {
       return true;
     }
 

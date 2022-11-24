@@ -1,40 +1,23 @@
-use std::io;
+use std::{io, error::Error};
 
-use polygon_puzzle::{
-  polygon_matcher,
-  shapes::{point::Point, polygon::Polygon},
-};
+use polygon_puzzle::{polygon_matcher, shapes::polygon::Polygon};
 
-fn read_line() -> Option<String> {
-  let mut line = String::new();
+fn main() -> Result<(), Box<dyn Error>> {
+  let stdin = io::stdin();
+  let stdin_lines = &mut stdin.lines();
 
-  match io::stdin().read_line(&mut line) {
-    Ok(_) => Some(line.trim().to_owned()),
-    Err(_) => None,
+  while let Some(line) = stdin_lines.next() {
+    // TODO: If there was some trait that allows me to obtain the
+    //       value inside a Result as well, then I shouldn't need to
+    //       use unwrap() inside the Polygon::from arguments.
+    let n = line?.parse()?;
+    let polygon1 = Polygon::from(n, &mut stdin_lines.map(Result::unwrap))?;
+
+    let n = stdin_lines.next().expect("should have 2 polygons per case")?.parse()?;
+    let polygon2 = Polygon::from(n, &mut stdin_lines.map(Result::unwrap))?;
+
+    println!("{:.12}", polygon_matcher::best_match(&polygon1, &polygon2));
   }
-}
 
-fn read_next_case() -> Option<(Polygon, Polygon)> {
-  let line = read_line()?;
-
-  let n = line.parse::<usize>().ok()?;
-  let mut vertices1: Vec<Point> = (0..n)
-    .map(|_| read_line().unwrap().parse().unwrap())
-    .collect();
-  let n = read_line()?.parse::<usize>().ok()?;
-
-  let mut vertices2: Vec<Point> = (0..n)
-    .map(|_| read_line().unwrap().parse().unwrap())
-    .collect();
-
-  vertices1.reverse();
-  vertices2.reverse();
-
-  Some((Polygon::new(vertices1), Polygon::new(vertices2)))
-}
-
-fn main() {
-  while let Some((p1, p2)) = read_next_case() {
-    println!("{:.12}", polygon_matcher::best_match(&p1, &p2));
-  }
+  Ok(())
 }

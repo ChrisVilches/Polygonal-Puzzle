@@ -42,7 +42,6 @@ impl CommonBoundary for Segment {
 
 impl Segment {
   fn common_boundary_aux(&self, s: &Self) -> f64 {
-    // TODO: Can I use match here?
     if self.contains(s.p) && s.contains(self.p) {
       self.p.dist(s.p)
     } else if self.contains(s.p) && s.contains(self.q) {
@@ -58,10 +57,6 @@ impl Segment {
 
   pub fn is_horizontal(&self) -> bool {
     equal(self.p.y, self.q.y)
-  }
-
-  pub const fn new(p: Point, q: Point) -> Self {
-    Self { p, q }
   }
 
   pub fn face_right(&self) -> bool {

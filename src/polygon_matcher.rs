@@ -2,11 +2,12 @@ use rayon::prelude::*;
 
 use crate::{
   constants::EPS,
-  shapes::{polygon::Polygon, segment::Segment},
+  shapes::{point::Point, polygon::Polygon},
   traits::{common_boundary::CommonBoundary, intersection::IntersectsHeuristic},
-  util::{cmp, max, orientation},
+  util::{ccw, cmp, max},
 };
 
+#[inline]
 fn range_contains(a: f64, b: f64, x: f64) -> bool {
   if a > b {
     b <= x + EPS && x - EPS <= a
@@ -15,50 +16,30 @@ fn range_contains(a: f64, b: f64, x: f64) -> bool {
   }
 }
 
-fn collect_shifts(
-  polygon_edges: &Polygon,
-  polygon_vertices: &Polygon,
-  right: bool,
-  max_shift: f64,
-) -> Vec<f64> {
-  let mut shifts = vec![];
+fn face_left((a, b, c): (Point, Point, Point)) -> bool {
+  a.seg(b).face_left() || b.seg(c).face_left()
+}
 
-  for wall in polygon_edges.edges() {
-    if wall.is_horizontal() {
-      continue;
-    }
+fn face_right((a, b, c): (Point, Point, Point)) -> bool {
+  a.seg(b).face_right() || b.seg(c).face_right()
+}
 
-    for (v0, v1, v2) in polygon_vertices.vertices() {
-      if !range_contains(wall.p.y, wall.q.y, v1.y) {
-        continue;
-      }
-
-      if orientation(v0, v1, v2) == -1 {
-        continue;
-      }
-
-      let point_left = Segment::new(v0, v1).face_left() || Segment::new(v1, v2).face_left();
-
-      if wall.face_right() && !point_left {
-        continue;
-      }
-
-      let point_right = Segment::new(v0, v1).face_right() || Segment::new(v1, v2).face_right();
-
-      if wall.face_left() && !point_right {
-        continue;
-      }
-
-      let mut x = wall.horizontal_distance(v1);
-      x = if right { x } else { -x };
-
-      if EPS < x && x < max_shift - EPS {
-        shifts.push(x);
-      }
-    }
-  }
-
-  shifts
+fn collect_shifts(edges: &Polygon, vertices: &Polygon, right: bool, max_shift: f64) -> Vec<f64> {
+  edges
+    .edges()
+    .filter(|w| !w.is_horizontal())
+    .flat_map(|wall| {
+      vertices
+        .vertices()
+        .filter(move |(a, b, c)| ccw(*a, *b, *c))
+        .filter(move |(_, b, _)| range_contains(wall.p.y, wall.q.y, b.y))
+        .filter(move |v| !wall.face_right() || face_left(*v))
+        .filter(move |v| !wall.face_left() || face_right(*v))
+        .map(move |(_, b, _)| wall.horizontal_distance(b))
+        .map(|x| if right { x } else { -x })
+        .filter(|x| range_contains(EPS, max_shift - EPS, *x))
+    })
+    .collect()
 }
 
 fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> f64 {
@@ -71,7 +52,7 @@ fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) 
   ]
   .concat();
 
-  shifts.par_sort_unstable_by(cmp);
+  shifts.sort_unstable_by(cmp);
 
   let mut prev_shift_x = 0_f64;
   let mut res = 0_f64;
@@ -103,6 +84,7 @@ fn pairs(a: usize, b: usize) -> Vec<(usize, usize)> {
 
 fn bases(polygon: &Polygon, rotations: &[Polygon]) -> Vec<f64> {
   (0..polygon.len())
+    .into_par_iter()
     .map(|i| {
       let polygon = &rotations[i];
       polygon.vertices[i].dist(polygon.vertex_at((i + 1) as i32))
