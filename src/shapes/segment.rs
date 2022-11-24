@@ -1,6 +1,6 @@
 use crate::{
   constants::EPS,
-  traits::{common_boundary::CommonBoundary, intersection::Intersection},
+  traits::{common_boundary::CommonBoundary, intersection::Intersects},
   util::{equal, orientation},
 };
 
@@ -12,7 +12,7 @@ pub struct Segment {
   pub q: Point,
 }
 
-impl Intersection for Segment {
+impl Intersects for Segment {
   fn intersects(&self, other: &Self) -> bool {
     let o1 = orientation(self.p, self.q, other.p);
     let o2 = orientation(self.p, self.q, other.q);
@@ -41,7 +41,7 @@ impl CommonBoundary for Segment {
 }
 
 impl Segment {
-  fn common_boundary_aux(&self, s: &Segment) -> f64 {
+  fn common_boundary_aux(&self, s: &Self) -> f64 {
     // TODO: Can I use match here?
     if self.contains(s.p) && s.contains(self.p) {
       self.p.dist(s.p)
@@ -60,7 +60,7 @@ impl Segment {
     equal(self.p.y, self.q.y)
   }
 
-  pub fn new(p: Point, q: Point) -> Self {
+  pub const fn new(p: Point, q: Point) -> Self {
     Self { p, q }
   }
 
@@ -83,10 +83,10 @@ impl Segment {
   }
 
   pub fn contains_except_endpoints(&self, r: Point) -> bool {
-    if orientation(self.p, self.q, r) != 0 {
-      false
-    } else {
+    if orientation(self.p, self.q, r) == 0 {
       (self.q - self.p) * (r - self.p) > EPS && (self.p - self.q) * (r - self.q) > EPS
+    } else {
+      false
     }
   }
 

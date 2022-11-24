@@ -6,9 +6,12 @@
 #![deny(clippy::str_to_string)]
 #![deny(clippy::try_err)]
 #![deny(clippy::panic)]
-#![deny(clippy::shadow_same)]
-#![deny(clippy::shadow_reuse)]
-#![deny(clippy::shadow_unrelated)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_possible_wrap)]
+// TODO: I don't understand these two linters. They require #[must_use] added to functions.
+#![allow(clippy::must_use_candidate)]
+#![allow(clippy::return_self_not_must_use)]
 
 mod constants;
 mod iterators;

@@ -24,7 +24,7 @@ impl Mul for Point {
   type Output = f64;
 
   fn mul(self, rhs: Self) -> Self::Output {
-    self.x * rhs.x + self.y * rhs.y
+    self.x.mul_add(rhs.x, self.y * rhs.y)
   }
 }
 
@@ -74,7 +74,7 @@ impl Point {
   pub fn rot_ccw(&self, t: f64) -> Self {
     Self {
       x: self.x * t.cos() - self.y * t.sin(),
-      y: self.x * t.sin() + self.y * t.cos(),
+      y: self.x.mul_add(t.sin(), self.y * t.cos()),
     }
   }
 }

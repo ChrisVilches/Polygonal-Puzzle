@@ -3,7 +3,7 @@ use crate::{
   iterators::{edge_iterator::EdgeIterator, vertex_iterator::VertexIterator},
   traits::{
     common_boundary::CommonBoundary,
-    intersection::{Intersection, IntersectionHeuristic},
+    intersection::{Intersects, IntersectsHeuristic},
   },
   util::{angle, ccw},
 };
@@ -15,7 +15,8 @@ pub struct Polygon {
   pub vertices: Vec<Point>,
 }
 
-impl IntersectionHeuristic for Polygon {
+impl IntersectsHeuristic for Polygon {
+  #[allow(clippy::integer_division)]
   fn intersects(&self, other: &Self, prev: &mut (i32, i32)) -> bool {
     let iters_i = ((self.len() / 2) + 1) as i32;
     let iters_j = ((other.len() / 2) + 1) as i32;
@@ -74,11 +75,11 @@ impl Polygon {
     Self { vertices }
   }
 
-  pub fn edges(&self) -> EdgeIterator {
+  pub const fn edges(&self) -> EdgeIterator {
     EdgeIterator::new(self)
   }
 
-  pub fn vertices(&self) -> VertexIterator {
+  pub const fn vertices(&self) -> VertexIterator {
     VertexIterator::new(self)
   }
 
@@ -112,7 +113,7 @@ impl Polygon {
     }
   }
 
-  pub fn rotations(&self) -> Vec<Polygon> {
+  pub fn rotations(&self) -> Vec<Self> {
     let polygon = &mut self.clone();
     let mut polygons = vec![];
 

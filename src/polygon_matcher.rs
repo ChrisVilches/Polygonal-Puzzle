@@ -3,7 +3,7 @@ use rayon::prelude::*;
 use crate::{
   constants::EPS,
   shapes::{polygon::Polygon, segment::Segment},
-  traits::{common_boundary::CommonBoundary, intersection::IntersectionHeuristic},
+  traits::{common_boundary::CommonBoundary, intersection::IntersectsHeuristic},
   util::{cmp, max, orientation},
 };
 

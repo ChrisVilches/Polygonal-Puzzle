@@ -81,7 +81,7 @@ fn test_read_all_test_cases_data() {
 
   for case in all_cases {
     let (p1, p2) = case.polygons;
-    assert!(p1.vertices.len() > 0);
-    assert!(p2.vertices.len() > 0);
+    assert!(!p1.vertices.is_empty());
+    assert!(!p2.vertices.is_empty());
   }
 }

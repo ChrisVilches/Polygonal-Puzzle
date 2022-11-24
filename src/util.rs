@@ -15,7 +15,7 @@ pub fn equal(a: f64, b: f64) -> bool {
 pub fn angle(a: Point, b: Point) -> f64 {
   let x = a.cross(b).atan2(a * b);
   if x < 0_f64 {
-    x + 2_f64 * std::f64::consts::PI
+    2_f64.mul_add(std::f64::consts::PI, x)
   } else {
     x
   }
@@ -48,6 +48,7 @@ pub fn max(a: f64, b: f64) -> f64 {
 }
 
 #[inline]
+#[allow(clippy::trivially_copy_pass_by_ref)]
 pub fn cmp(a: &f64, b: &f64) -> Ordering {
   if a < b {
     Ordering::Less

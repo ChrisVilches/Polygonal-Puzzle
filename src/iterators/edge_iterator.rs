@@ -6,7 +6,7 @@ pub struct EdgeIterator<'a> {
 }
 
 impl<'a> EdgeIterator<'a> {
-  pub fn new(polygon: &'a Polygon) -> Self {
+  pub const fn new(polygon: &'a Polygon) -> Self {
     Self {
       polygon,
       curr_idx: 0,
