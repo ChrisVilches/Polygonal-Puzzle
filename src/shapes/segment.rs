@@ -36,6 +36,7 @@ impl CommonBoundary for Segment {
     if other.contains(self.p) && other.contains(self.q) {
       return self.length();
     }
+
     self.common_boundary_aux(other)
   }
 }
@@ -55,18 +56,22 @@ impl Segment {
     }
   }
 
+  #[must_use]
   pub fn is_horizontal(&self) -> bool {
     equal(self.p.y, self.q.y)
   }
 
+  #[must_use]
   pub fn face_right(&self) -> bool {
     !self.is_horizontal() && self.p.y < self.q.y
   }
 
+  #[must_use]
   pub fn face_left(&self) -> bool {
     !self.is_horizontal() && self.p.y > self.q.y
   }
 
+  #[must_use]
   pub fn horizontal_distance(&self, v: Point) -> f64 {
     if equal(self.p.x, self.q.x) {
       v.x - self.p.x
@@ -77,6 +82,7 @@ impl Segment {
     }
   }
 
+  #[must_use]
   pub fn contains_except_endpoints(&self, r: Point) -> bool {
     if orientation(self.p, self.q, r) == 0 {
       (self.q - self.p) * (r - self.p) > EPS && (self.p - self.q) * (r - self.q) > EPS
@@ -85,6 +91,7 @@ impl Segment {
     }
   }
 
+  #[must_use]
   pub fn length(&self) -> f64 {
     self.p.dist(self.q)
   }

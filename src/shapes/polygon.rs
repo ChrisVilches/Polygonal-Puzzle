@@ -100,32 +100,39 @@ impl Polygon {
     Ok(Self { vertices })
   }
 
+  #[must_use]
   pub fn new(vertices: Vec<Point>) -> Self {
     Self { vertices }
   }
 
+  #[must_use]
   pub const fn edges(&self) -> EdgeIterator {
     EdgeIterator::new(self)
   }
 
+  #[must_use]
   pub const fn vertices(&self) -> VertexIterator {
     VertexIterator::new(self)
   }
 
+  #[must_use]
   pub fn len(&self) -> usize {
     self.vertices.len()
   }
 
+  #[must_use]
   pub fn is_empty(&self) -> bool {
     self.vertices.is_empty()
   }
 
+  #[must_use]
   pub fn vertex_at(&self, i: i32) -> Point {
     let n = self.len() as i32;
     let i = (i + (n << 10)) % n;
     self.vertices[i as usize]
   }
 
+  #[must_use]
   pub fn vertices_at(&self, i: i32) -> (Point, Point, Point) {
     let n = self.len() as i32;
     let i = (i + (n << 10)) % n;
@@ -136,12 +143,14 @@ impl Polygon {
     )
   }
 
+  #[must_use]
   pub fn negate(&self) -> Self {
     Self {
       vertices: self.vertices.iter().map(Point::negate).collect(),
     }
   }
 
+  #[must_use]
   pub fn rotations(&self) -> Vec<Self> {
     let polygon = &mut self.clone();
     let mut polygons = vec![];

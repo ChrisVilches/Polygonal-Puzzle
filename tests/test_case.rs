@@ -7,7 +7,9 @@ pub struct TestCase {
 
 impl TestCase {
   pub fn vec_from(input: &str, output: &str) -> Vec<Self> {
-    let answers = output.lines().map(|line| line.parse().expect("should parse a float"));
+    let answers = output
+      .lines()
+      .map(|line| line.parse().expect("should parse a float"));
 
     let mut polygons: Vec<Polygon> = vec![];
 

@@ -1,4 +1,4 @@
-use std::{io, error::Error};
+use std::{error::Error, io};
 
 use polygon_puzzle::{polygon_matcher, shapes::polygon::Polygon};
 
@@ -13,7 +13,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let n = line?.parse()?;
     let polygon1 = Polygon::from(n, &mut stdin_lines.map(Result::unwrap))?;
 
-    let n = stdin_lines.next().expect("should have 2 polygons per case")?.parse()?;
+    let n = stdin_lines
+      .next()
+      .expect("should have 2 polygons per case")?
+      .parse()?;
     let polygon2 = Polygon::from(n, &mut stdin_lines.map(Result::unwrap))?;
 
     println!("{:.12}", polygon_matcher::best_match(&polygon1, &polygon2));

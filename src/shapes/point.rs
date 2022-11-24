@@ -63,18 +63,22 @@ impl FromStr for Point {
 }
 
 impl Point {
+  #[must_use]
   pub fn dist(&self, other: Self) -> f64 {
     (self.x - other.x).hypot(self.y - other.y)
   }
 
+  #[must_use]
   pub fn cross(&self, other: Self) -> f64 {
     self.x * other.y - self.y * other.x
   }
 
+  #[must_use]
   pub fn equal(&self, other: Self) -> bool {
     equal(self.x, other.x) && equal(self.y, other.y)
   }
 
+  #[must_use]
   pub fn negate(&self) -> Self {
     Self {
       x: -self.x,
@@ -82,10 +86,12 @@ impl Point {
     }
   }
 
+  #[must_use]
   pub const fn seg(&self, other: Self) -> Segment {
     Segment { p: *self, q: other }
   }
 
+  #[must_use]
   pub fn rot_ccw(&self, t: f64) -> Self {
     Self {
       x: self.x * t.cos() - self.y * t.sin(),

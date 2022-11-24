@@ -92,6 +92,7 @@ fn bases(polygon: &Polygon, rotations: &[Polygon]) -> Vec<f64> {
     .collect()
 }
 
+#[must_use]
 pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
   let rotations1 = polygon1
     .rotations()
