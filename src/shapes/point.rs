@@ -1,8 +1,11 @@
-use std::ops::{Mul, Sub, SubAssign};
+use std::{
+  ops::{Mul, Sub, SubAssign},
+  str::FromStr,
+};
 
 use crate::util::equal;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Point {
   pub x: f64,
   pub y: f64,
@@ -33,6 +36,18 @@ impl Sub for Point {
       x: self.x - rhs.x,
       y: self.y - rhs.y,
     }
+  }
+}
+
+impl FromStr for Point {
+  type Err = String;
+
+  // TODO: No errors for now.
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    let mut iter = s.split(' ').map(|n| n.parse().unwrap());
+    let x = iter.next().unwrap();
+    let y = iter.next().unwrap();
+    Ok(Self { x, y })
   }
 }
 

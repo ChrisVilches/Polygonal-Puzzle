@@ -1,56 +1,40 @@
-use crate::shapes::polygon::Polygon;
-use shapes::point::Point;
 use std::io;
-mod constants;
-mod iterators;
-mod polygon_matcher;
-mod shapes;
-mod traits;
-mod util;
 
-fn read_line() -> String {
+use polygon_puzzle::{
+  polygon_matcher,
+  shapes::{point::Point, polygon::Polygon},
+};
+
+fn read_line() -> Option<String> {
   let mut line = String::new();
-  io::stdin().read_line(&mut line).unwrap();
-  line
-}
 
-fn read_int() -> i32 {
-  read_line().trim().parse().unwrap()
-}
-
-fn read_point() -> Point {
-  let line = read_line();
-  let nums: Vec<&str> = line.split(' ').collect();
-
-  Point {
-    x: nums[0].trim().parse().unwrap(),
-    y: nums[1].trim().parse().unwrap(),
+  match io::stdin().read_line(&mut line) {
+    Ok(_) => Some(line.trim().to_owned()),
+    Err(_) => None,
   }
 }
 
+fn read_next_case() -> Option<(Polygon, Polygon)> {
+  let line = read_line()?;
+
+  let n = line.parse::<usize>().ok()?;
+  let mut vertices1: Vec<Point> = (0..n)
+    .map(|_| read_line().unwrap().parse().unwrap())
+    .collect();
+  let n = read_line()?.parse::<usize>().ok()?;
+
+  let mut vertices2: Vec<Point> = (0..n)
+    .map(|_| read_line().unwrap().parse().unwrap())
+    .collect();
+
+  vertices1.reverse();
+  vertices2.reverse();
+
+  Some((Polygon::new(vertices1), Polygon::new(vertices2)))
+}
+
 fn main() {
-  loop {
-    let mut line = String::new();
-    io::stdin().read_line(&mut line).unwrap();
-
-    let n = line.trim().parse();
-
-    let n = match n {
-      Ok(val) => val,
-      Err(_) => {
-        break;
-      }
-    };
-
-    let mut vertices1: Vec<Point> = (0..n).map(|_| read_point()).collect();
-    let mut vertices2: Vec<Point> = (0..read_int()).map(|_| read_point()).collect();
-
-    vertices1.reverse();
-    vertices2.reverse();
-
-    let polygon1 = Polygon::new(vertices1);
-    let polygon2 = Polygon::new(vertices2);
-
-    println!("{:.12}", polygon_matcher::best_match(&polygon1, &polygon2));
+  while let Some((p1, p2)) = read_next_case() {
+    println!("{:.12}", polygon_matcher::best_match(&p1, &p2));
   }
 }

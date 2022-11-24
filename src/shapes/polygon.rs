@@ -5,12 +5,12 @@ use crate::{
     common_boundary::CommonBoundary,
     intersection::{Intersection, IntersectionHeuristic},
   },
-  util::{angle, orientation},
+  util::{angle, ccw},
 };
 
 use super::{point::Point, segment::Segment};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Polygon {
   pub vertices: Vec<Point>,
 }
@@ -86,6 +86,10 @@ impl Polygon {
     self.vertices.len()
   }
 
+  pub fn is_empty(&self) -> bool {
+    self.vertices.is_empty()
+  }
+
   pub fn vertex_at(&self, i: i32) -> Point {
     let n = self.len() as i32;
     let i = (i + (n << 10)) % n;
@@ -143,15 +147,11 @@ impl Polygon {
       return true;
     }
 
-    if Segment::new(b1, b2).contains_except_endpoints(a1) {
-      if orientation(b1, b2, a2) == 1 || orientation(b1, b2, a0) == 1 {
-        return true;
-      }
+    if Segment::new(b1, b2).contains_except_endpoints(a1) && (ccw(b1, b2, a2) || ccw(b1, b2, a0)) {
+      return true;
     }
-    if Segment::new(a1, a2).contains_except_endpoints(b1) {
-      if orientation(a1, a2, b2) == 1 || orientation(a1, a2, b0) == 1 {
-        return true;
-      }
+    if Segment::new(a1, a2).contains_except_endpoints(b1) && (ccw(a1, a2, b2) || ccw(a1, a2, b0)) {
+      return true;
     }
 
     if a1.equal(b1) {
