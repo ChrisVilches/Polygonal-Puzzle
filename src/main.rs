@@ -7,9 +7,6 @@ fn main() -> Result<(), Box<dyn Error>> {
   let stdin_lines = &mut stdin.lines();
 
   while let Some(line) = stdin_lines.next() {
-    // TODO: If there was some trait that allows me to obtain the
-    //       value inside a Result as well, then I shouldn't need to
-    //       use unwrap() inside the Polygon::from arguments.
     let n = line?.parse()?;
     let polygon1 = Polygon::from(n, &mut stdin_lines.map(Result::unwrap))?;
 

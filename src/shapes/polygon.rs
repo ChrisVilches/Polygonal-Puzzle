@@ -79,17 +79,6 @@ impl Polygon {
     I: Iterator,
     I::Item: Borrow<str>,
   {
-    // TODO: I'm not so sure about this. There are too many unwraps.
-    //       My idea was to implement a way so that io::Lines and str::Lines work,
-    //       but they are different (one needs two unwraps, and the other one only needs one).
-    //
-    //       My guess is that this is actually OK, because if I delete the Borrow<str>, it probably wouldn't work
-    //       so that means this solution is (presumably) irreplaceable.
-    //
-    //       Maybe it can be improved a bit. Read this question again:
-    //
-    //       How to combine std::str::lines and std::io::lines?
-    //       https://stackoverflow.com/questions/37028476/how-to-combine-stdstrlines-and-stdiolines
     let mut vertices: Vec<Point> = lines
       .take(vertices_count)
       .map(|line| Point::from_str(line.borrow()))
