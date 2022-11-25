@@ -35,7 +35,7 @@ cargo fmt && cargo clippy
 ## Testing
 
 ```sh
-cargo test -- --nocapture
+cargo test
 ```
 
 ## Alternative Solution (C++)
