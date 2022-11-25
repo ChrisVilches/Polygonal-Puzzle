@@ -8,10 +8,12 @@ fn zero(x: f64) -> bool {
 }
 
 #[inline]
+#[must_use]
 pub fn equal(a: f64, b: f64) -> bool {
   zero(a - b)
 }
 
+#[must_use]
 pub fn angle(a: Point, b: Point) -> f64 {
   let x = a.cross(b).atan2(a * b);
   if x < 0_f64 {
@@ -21,8 +23,10 @@ pub fn angle(a: Point, b: Point) -> f64 {
   }
 }
 
+#[must_use]
 pub fn orientation(o: Point, a: Point, b: Point) -> i8 {
   let cross = (a - o).cross(b - o);
+
   if zero(cross) {
     0
   } else if cross > 0_f64 {
@@ -33,11 +37,23 @@ pub fn orientation(o: Point, a: Point, b: Point) -> i8 {
 }
 
 #[inline]
+#[must_use]
 pub fn ccw(o: Point, a: Point, b: Point) -> bool {
   orientation(o, a, b) == 1
 }
 
 #[inline]
+#[must_use]
+#[allow(clippy::trivially_copy_pass_by_ref)]
+pub fn cmp(a: &f64, b: &f64) -> Ordering {
+  if a < b {
+    Ordering::Less
+  } else {
+    Ordering::Greater
+  }
+}
+
+#[must_use]
 pub fn max(a: f64, b: f64) -> f64 {
   if a > b {
     a
@@ -46,12 +62,11 @@ pub fn max(a: f64, b: f64) -> f64 {
   }
 }
 
-#[inline]
-#[allow(clippy::trivially_copy_pass_by_ref)]
-pub fn cmp(a: &f64, b: &f64) -> Ordering {
+#[must_use]
+pub fn min(a: f64, b: f64) -> f64 {
   if a < b {
-    Ordering::Less
+    a
   } else {
-    Ordering::Greater
+    b
   }
 }

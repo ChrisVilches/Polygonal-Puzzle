@@ -4,7 +4,7 @@ use crate::{
   constants::EPS,
   shapes::{point::Point, polygon::Polygon},
   traits::{common_boundary::CommonBoundary, intersection::IntersectsHeuristic},
-  util::{ccw, cmp, max},
+  util::{ccw, cmp},
 };
 
 #[inline]
@@ -42,8 +42,7 @@ fn collect_shifts(edges: &Polygon, vertices: &Polygon, right: bool, max_shift: f
     .collect()
 }
 
-fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> f64 {
-  let mut polygon1 = polygon1;
+fn optimal_shift(mut polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> (f64, f64) {
   let max_shift = base1 + base2;
   let mut shifts = [
     vec![base1, base2],
@@ -55,7 +54,7 @@ fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) 
   shifts.sort_unstable_by(cmp);
 
   let mut prev_shift_x = 0_f64;
-  let mut res = 0_f64;
+  let mut solution = (0_f64, 0_f64);
   let mut prev = (0, 0);
 
   for x in shifts {
@@ -69,13 +68,17 @@ fn optimal_shift(polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) 
       .for_each(|p| p.x += x - prev_shift_x);
 
     if !polygon1.intersects(polygon2, &mut prev) {
-      res = max(res, polygon1.common_boundary(polygon2));
+      let boundary = polygon1.common_boundary(polygon2);
+      if boundary > solution.0 {
+        solution.0 = boundary;
+        solution.1 = x;
+      }
     }
 
     prev_shift_x = x;
   }
 
-  res
+  solution
 }
 
 fn pairs(a: usize, b: usize) -> Vec<(usize, usize)> {
@@ -93,7 +96,7 @@ fn bases(polygon: &Polygon, rotations: &[Polygon]) -> Vec<f64> {
 }
 
 #[must_use]
-pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
+pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> (Polygon, Polygon, f64) {
   let rotations1 = polygon1
     .rotations()
     .iter()
@@ -107,13 +110,25 @@ pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> f64 {
   pairs(rotations1.len(), rotations2.len())
     .par_iter()
     .map(|(i, j)| {
-      optimal_shift(
-        rotations1[*i].clone(),
-        &rotations2[*j],
-        base1[*i],
-        base2[*j],
+      (
+        *i,
+        *j,
+        optimal_shift(
+          rotations1[*i].clone(),
+          &rotations2[*j],
+          base1[*i],
+          base2[*j],
+        ),
       )
     })
-    .max_by(cmp)
-    .unwrap_or(0_f64)
+    .max_by(|(_, _, (a, _)), (_, _, (b, _))| cmp(a, b))
+    .map(|(i, j, (boundary, offset))| {
+      let mut p1 = rotations1[i].clone();
+      let p2 = rotations2[j].clone();
+
+      p1.vertices.iter_mut().for_each(|p| p.x += offset);
+
+      (p1, p2, boundary)
+    })
+    .expect("there should be at least one solution")
 }

@@ -14,5 +14,5 @@ mod constants;
 mod iterators;
 pub mod polygon_matcher;
 pub mod shapes;
-mod traits;
-mod util;
+pub mod traits;
+pub mod util;

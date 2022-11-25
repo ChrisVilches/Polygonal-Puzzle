@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 rayon = "1.6.0"
+crossbeam = "0.8.2"
+svg = "0.12.1"

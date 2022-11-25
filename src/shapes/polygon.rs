@@ -3,6 +3,7 @@ use crate::{
   iterators::{edge_iterator::EdgeIterator, vertex_iterator::VertexIterator},
   traits::{
     common_boundary::CommonBoundary,
+    desmos::Desmos,
     intersection::{Intersects, IntersectsHeuristic},
   },
   util::{angle, ccw},
@@ -24,12 +25,12 @@ impl IntersectsHeuristic for Polygon {
 
     for i in 0..iters_i {
       for j in 0..iters_j {
-        if self.intersection_aux(other, prev.0 + i, prev.1 + j) {
+        if Self::intersection_aux(self, other, prev.0 + i, prev.1 + j) {
           prev.0 += i;
           prev.1 += j;
           return true;
         }
-        if j > 0 && self.intersection_aux(other, prev.0 + i, prev.1 - j) {
+        if j > 0 && Self::intersection_aux(self, other, prev.0 + i, prev.1 - j) {
           prev.0 += i;
           prev.1 -= j;
           return true;
@@ -41,12 +42,12 @@ impl IntersectsHeuristic for Polygon {
       }
 
       for j in 0..iters_j {
-        if self.intersection_aux(other, prev.0 - i, prev.1 + j) {
+        if Self::intersection_aux(self, other, prev.0 - i, prev.1 + j) {
           prev.0 -= i;
           prev.1 += j;
           return true;
         }
-        if j > 0 && self.intersection_aux(other, prev.0 - i, prev.1 - j) {
+        if j > 0 && Self::intersection_aux(self, other, prev.0 - i, prev.1 - j) {
           prev.0 -= i;
           prev.1 -= j;
           return true;
@@ -68,6 +69,16 @@ impl CommonBoundary for Polygon {
           .map(move |e2: Segment| e1.common_boundary(&e2))
       })
       .sum()
+  }
+}
+
+impl Desmos for Polygon {
+  fn fmt_desmos(&self) -> String {
+    self
+      .edges()
+      .map(|s| s.fmt_desmos())
+      .collect::<Vec<String>>()
+      .join("\n")
   }
 }
 
@@ -167,9 +178,9 @@ impl Polygon {
     polygons
   }
 
-  fn intersection_aux(&self, other: &Self, i: i32, j: i32) -> bool {
-    let (a0, a1, a2) = self.vertices_at(i);
-    let (b0, b1, b2) = other.vertices_at(j);
+  fn intersection_aux(p1: &Self, p2: &Self, i: i32, j: i32) -> bool {
+    let (a0, a1, a2) = p1.vertices_at(i);
+    let (b0, b1, b2) = p2.vertices_at(j);
 
     if a1.seg(a2).intersects(&b1.seg(b2)) {
       return true;
@@ -184,12 +195,31 @@ impl Polygon {
 
     if a1.equal(b1) {
       let th = angle(b2 - b1, b0 - b1);
+
       let th2 = angle(b2 - b1, a0 - b1);
       if th2 > EPS && th2 < th - EPS {
         return true;
       }
+
+      /*
+       * TODO: Fix it even more?
+       * Case 8 was wrong, because the polygon was not detected.
+       * Before, the line was like this:
+       * if th2 > EPS && th2 < th - EPS {
+       *
+       * And I think changing it to angle >= 0 fixed it because
+       * that's what happens in this case (case 8).
+       * There might be other cases where something like this happens,
+       * specially because I only fixed this line, and there's a similar
+       * line above (th2 > EPS).
+       * (Changing that line gives WA though)
+       * This change got AC in the C++ solution as well.
+       *
+       * Also add this as "issues" to the Algorithms repository.
+       */
+
       let th2 = angle(b2 - b1, a2 - b1);
-      if th2 > EPS && th2 < th - EPS {
+      if th2 >= 0_f64 && th2 < th - EPS {
         return true;
       }
     }

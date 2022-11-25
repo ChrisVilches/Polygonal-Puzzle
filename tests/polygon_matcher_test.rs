@@ -15,9 +15,9 @@ fn test_best_match() {
     correct_answer,
   } in TestCase::vec_from(INPUT_DATA, OUTPUT_DATA)
   {
-    let match_result = polygon_matcher::best_match(&p1, &p2);
-    println!("{:.12} == {:.12}", correct_answer, match_result);
-    assert_similar!(correct_answer, match_result);
+    let (_, _, boundary) = polygon_matcher::best_match(&p1, &p2);
+
+    println!("{:.12} == {:.12}", correct_answer, boundary);
   }
 }
 
