@@ -22,7 +22,7 @@ fn test_best_match() {
 }
 
 #[test]
-fn test_read_all_test_cases_data() {
+fn test_official_data() {
   let all_cases = TestCase::vec_from(INPUT_DATA, OUTPUT_DATA);
   assert_eq!(all_cases.len(), 59);
 

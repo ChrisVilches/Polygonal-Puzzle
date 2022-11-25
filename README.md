@@ -34,14 +34,8 @@ cargo fmt && cargo clippy
 
 ## Testing
 
-*Note:* In `[unoptimized + debuginfo]` mode it's a bit slow (it processes the entire official dataset).
-
 ```sh
 cargo test -- --nocapture
-
-# or
-
-cargo test --release -- --nocapture
 ```
 
 ## Alternative Solution (C++)

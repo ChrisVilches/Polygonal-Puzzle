@@ -36,32 +36,30 @@ impl Intersects for Segment {
   }
 }
 
-impl CommonBoundary for Segment {
-  fn common_boundary(&self, other: &Self) -> f64 {
+impl CommonBoundary<Option<Self>> for Segment {
+  fn common_boundary(&self, other: &Self) -> Option<Self> {
     if self.contains(other.p) && self.contains(other.q) {
-      return other.length();
+      Some(*other)
+    } else if other.contains(self.p) && other.contains(self.q) {
+      Some(*self)
+    } else {
+      self.common_boundary_aux(other)
     }
-
-    if other.contains(self.p) && other.contains(self.q) {
-      return self.length();
-    }
-
-    self.common_boundary_aux(other)
   }
 }
 
 impl Segment {
-  fn common_boundary_aux(&self, s: &Self) -> f64 {
+  fn common_boundary_aux(&self, s: &Self) -> Option<Self> {
     if self.contains(s.p) && s.contains(self.p) {
-      self.p.dist(s.p)
+      Some(self.p.seg(s.p))
     } else if self.contains(s.p) && s.contains(self.q) {
-      self.q.dist(s.p)
+      Some(self.q.seg(s.p))
     } else if self.contains(s.q) && s.contains(self.p) {
-      self.p.dist(s.q)
+      Some(self.p.seg(s.q))
     } else if self.contains(s.q) && s.contains(self.q) {
-      self.q.dist(s.q)
+      Some(self.q.seg(s.q))
     } else {
-      0_f64
+      None
     }
   }
 

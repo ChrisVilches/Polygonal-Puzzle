@@ -1,34 +1,66 @@
+use super::paths::PathGroup;
 use super::{WriteResult, RESULTS_DIR};
+use polygon_puzzle::shapes::point::Point;
 use polygon_puzzle::shapes::polygon::Polygon;
+use polygon_puzzle::shapes::segment::Segment;
+use polygon_puzzle::traits::common_boundary::CommonBoundary;
 use polygon_puzzle::util::{cmp, equal, max, min};
 use svg::node::element::path::Data;
 use svg::node::element::Path;
 use svg::Document;
 
-const FACTOR: f64 = 60_f64;
+const FACTOR: f64 = 20_f64;
 const MARGIN: f64 = 10_f64;
+const COMMON_BOUNDARY_STROKE_WIDTH: f64 = 3_f64;
+const COMMON_BOUNDARY_COLOR: &str = "#00FF00";
+const COLOR_POLYGON_1: &str = "#5b65b3";
+const COLOR_POLYGON_2: &str = "#a64459";
 
 pub struct SvgOutputWriter {}
 
 impl SvgOutputWriter {
-  fn polygon_to_svg(polygon: &Polygon, color: &str) -> Path {
+  fn polyline_to_svg<'a, T>(points: T) -> Data
+  where
+    T: Iterator<Item = &'a Point>,
+  {
     let mut data = Data::new();
 
-    for i in 0..polygon.vertices.len() {
-      let v = polygon.vertices[i];
+    let mut i = 0;
 
+    for p in points {
       if i == 0 {
-        data = data.move_to((v.x, v.y));
+        data = data.move_to((p.x, p.y));
       } else {
-        data = data.line_to((v.x, v.y));
+        data = data.line_to((p.x, p.y));
       }
+
+      i += 1;
     }
 
+    data
+  }
+
+  fn polygon_to_svg(polygon: &Polygon, color: &str) -> Path {
     Path::new()
       .set("fill", color)
-      .set("stroke", "black")
-      .set("stroke-width", 1)
-      .set("d", data.close())
+      .set("d", Self::polyline_to_svg(polygon.vertices.iter()).close())
+  }
+
+  fn boundary_to_svg(p1: &Polygon, p2: &Polygon) -> Vec<Path> {
+    let segments = <Polygon as CommonBoundary<Vec<Segment>>>::common_boundary(p1, p2);
+
+    PathGroup::from_segments(&segments)
+      .paths
+      .iter()
+      .map(|p| Self::polyline_to_svg(p.points.iter()))
+      .map(|d| {
+        Path::new()
+          .set("stroke", COMMON_BOUNDARY_COLOR)
+          .set("fill", "none")
+          .set("stroke-width", COMMON_BOUNDARY_STROKE_WIDTH)
+          .set("d", d)
+      })
+      .collect()
   }
 
   fn render_polygons_image(mut p1: Polygon, mut p2: Polygon, path: &str) {
@@ -45,10 +77,14 @@ impl SvgOutputWriter {
         max_y = max(max_y, p.y);
       });
 
-    let document = Document::new()
+    let mut document = Document::new()
       .set("viewBox", (0, 0, max_x + MARGIN, max_y + MARGIN))
-      .add(Self::polygon_to_svg(&p1, "#a64459"))
-      .add(Self::polygon_to_svg(&p2, "#2837ad"));
+      .add(Self::polygon_to_svg(&p1, COLOR_POLYGON_1))
+      .add(Self::polygon_to_svg(&p2, COLOR_POLYGON_2));
+
+    for boundary in Self::boundary_to_svg(&p1, &p2) {
+      document = document.add(boundary)
+    }
 
     svg::save(path, &document).unwrap();
   }

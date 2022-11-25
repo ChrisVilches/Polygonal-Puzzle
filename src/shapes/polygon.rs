@@ -59,7 +59,7 @@ impl IntersectsHeuristic for Polygon {
   }
 }
 
-impl CommonBoundary for Polygon {
+impl CommonBoundary<f64> for Polygon {
   fn common_boundary(&self, other: &Self) -> f64 {
     self
       .edges()
@@ -67,8 +67,22 @@ impl CommonBoundary for Polygon {
         other
           .edges()
           .map(move |e2: Segment| e1.common_boundary(&e2))
+          .map(|s| s.map_or(0_f64, |s| s.length()))
       })
       .sum()
+  }
+}
+
+impl CommonBoundary<Vec<Segment>> for Polygon {
+  fn common_boundary(&self, other: &Self) -> Vec<Segment> {
+    self
+      .edges()
+      .flat_map(|e1| {
+        other
+          .edges()
+          .filter_map(move |e2: Segment| e1.common_boundary(&e2))
+      })
+      .collect()
   }
 }
 
