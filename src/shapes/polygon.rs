@@ -196,23 +196,6 @@ impl Polygon {
         return true;
       }
 
-      /*
-       * TODO: Fix it even more?
-       * Case 8 was wrong, because the polygon was not detected.
-       * Before, the line was like this:
-       * if th2 > EPS && th2 < th - EPS {
-       *
-       * And I think changing it to angle >= 0 fixed it because
-       * that's what happens in this case (case 8).
-       * There might be other cases where something like this happens,
-       * specially because I only fixed this line, and there's a similar
-       * line above (th2 > EPS).
-       * (Changing that line gives WA though)
-       * This change got AC in the C++ solution as well.
-       *
-       * Also add this as "issues" to the Algorithms repository.
-       */
-
       let th2 = angle(b2 - b1, a2 - b1);
       if th2 >= 0_f64 && th2 < th - EPS {
         return true;
