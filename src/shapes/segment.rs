@@ -104,6 +104,6 @@ impl Segment {
   }
 
   fn contains(&self, r: Point) -> bool {
-    self.p.equal(r) || self.q.equal(r) || self.contains_except_endpoints(r)
+    self.p == r || self.q == r || self.contains_except_endpoints(r)
   }
 }

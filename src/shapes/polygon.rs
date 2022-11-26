@@ -190,7 +190,7 @@ impl Polygon {
       return true;
     }
 
-    if a1.equal(b1) {
+    if a1 == b1 {
       let th = angle(b2 - b1, b0 - b1);
 
       let th2 = angle(b2 - b1, a0 - b1);

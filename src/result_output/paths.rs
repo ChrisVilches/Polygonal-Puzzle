@@ -14,9 +14,9 @@ impl Path {
   fn put_back(&mut self, Segment { p, q }: &Segment) -> bool {
     let back = self.points.back().unwrap();
 
-    if back.equal(*p) {
+    if back == p {
       self.points.push_back(*q);
-    } else if back.equal(*q) {
+    } else if back == q {
       self.points.push_back(*p);
     } else {
       return false;
@@ -27,9 +27,9 @@ impl Path {
   fn put_front(&mut self, Segment { p, q }: &Segment) -> bool {
     let front = self.points.front().unwrap();
 
-    if front.equal(*p) {
+    if front == p {
       self.points.push_front(*q);
-    } else if front.equal(*q) {
+    } else if front == q {
       self.points.push_front(*p);
     } else {
       return false;

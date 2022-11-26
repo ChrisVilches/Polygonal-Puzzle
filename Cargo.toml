@@ -10,5 +10,8 @@ rayon = "1.6.0"
 crossbeam = "0.8.2"
 svg = "0.12.1"
 
+[dev-dependencies]
+test-case = "2.2.2"
+
 [profile.test]
 opt-level = 3
