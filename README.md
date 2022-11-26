@@ -29,7 +29,8 @@ cargo run --release < tests/data/input | cpdiff tests/data/output
 ## Format & Lint
 
 ```sh
-cargo fmt && cargo clippy
+cargo fmt
+touch src/main.rs && touch src/lib.rs && cargo clippy
 ```
 
 ## Testing
