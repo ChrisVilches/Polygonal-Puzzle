@@ -45,8 +45,7 @@ impl WriteResult for OutputWriter {
 
     self
       .file_handler
-      .write_all(s.as_bytes())
+      .write_all((s + "\n").as_bytes())
       .expect(EXPECT_WRITE_DATA);
-    self.file_handler.write_all(b"\n").expect(EXPECT_WRITE_DATA);
   }
 }

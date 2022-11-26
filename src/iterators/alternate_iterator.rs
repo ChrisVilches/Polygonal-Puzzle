@@ -1,4 +1,3 @@
-// TODO: Can I use only two parameters for this algorithm?
 pub struct AlternateIterator {
   curr: i32,
   inc: i32,

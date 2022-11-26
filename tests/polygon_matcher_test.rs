@@ -9,7 +9,7 @@ static INPUT_DATA: &str = include_str!("./data/input");
 static OUTPUT_DATA: &str = include_str!("./data/output");
 
 #[test]
-fn test_best_match() {
+fn test_official_data() {
   for TestCase {
     polygons: (p1, p2),
     correct_answer,
@@ -17,14 +17,15 @@ fn test_best_match() {
   {
     let (_, _, boundary) = polygon_matcher::best_match(&p1, &p2);
 
+    assert_similar!(correct_answer, boundary);
     println!("{:.12} == {:.12}", correct_answer, boundary);
   }
 }
 
 #[test]
-fn test_official_data() {
+fn test_official_data_read_io() {
   let all_cases = TestCase::vec_from(INPUT_DATA, OUTPUT_DATA);
-  assert_eq!(all_cases.len(), 59);
+  assert_eq!(all_cases.len(), 61);
 
   for case in all_cases {
     let (p1, p2) = case.polygons;

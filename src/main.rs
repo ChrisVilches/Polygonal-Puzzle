@@ -35,8 +35,7 @@ fn write_results_thread(r: &Receiver<(Polygon, Polygon, f64)>) {
 }
 
 fn main_thread(s: Sender<(Polygon, Polygon, f64)>) -> Result<(), Box<dyn Error>> {
-  let stdin = io::stdin();
-  let stdin_lines = &mut stdin.lines();
+  let stdin_lines = &mut io::stdin().lines();
 
   while let Some(line) = stdin_lines.next() {
     let n = line?.parse()?;

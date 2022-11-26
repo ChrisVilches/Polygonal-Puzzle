@@ -54,6 +54,7 @@ fn collect_all_shifts(polygon1: &Polygon, polygon2: &Polygon, base1: f64, base2:
   shifts
 }
 
+#[allow(clippy::too_many_lines)]
 fn optimal_shift(mut polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> (f64, f64) {
   let mut prev_shift_x = 0_f64;
   let mut solution = (0_f64, 0_f64);
@@ -109,6 +110,7 @@ fn both_rotations(polygon1: &Polygon, polygon2: &Polygon) -> (Vec<Polygon>, Vec<
 }
 
 #[must_use]
+#[allow(clippy::too_many_lines)]
 pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> (Polygon, Polygon, f64) {
   let (rotations1, rotations2) = both_rotations(polygon1, polygon2);
 

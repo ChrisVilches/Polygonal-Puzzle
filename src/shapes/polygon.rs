@@ -146,6 +146,7 @@ impl Polygon {
   }
 
   #[must_use]
+  #[allow(clippy::too_many_lines)]
   pub fn rotations(&self) -> Vec<Self> {
     let polygon = &mut self.clone();
     let mut polygons = vec![];
@@ -173,6 +174,7 @@ impl Polygon {
     polygons
   }
 
+  #[allow(clippy::too_many_lines)]
   fn intersection_aux(p1: &Self, p2: &Self, i: i32, j: i32) -> bool {
     let (a0, a1, a2) = p1.vertices_at(i);
     let (b0, b1, b2) = p2.vertices_at(j);

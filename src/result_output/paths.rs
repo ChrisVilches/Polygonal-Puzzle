@@ -8,21 +8,26 @@ pub struct Path {
 
 impl Path {
   fn put(&mut self, s: &Segment) -> bool {
-    // TODO: Does this work OK?
-    //       If it's empty, it gets added, but would the second condition execute?
-    //       Looks weird, but probably works.
-    self.put_empty(s) || self.put_sides(s)
+    self.put_empty(s) || self.put_back(s) || self.put_front(s)
   }
 
-  fn put_sides(&mut self, Segment { p, q }: &Segment) -> bool {
-    let front = self.points.front().unwrap();
+  fn put_back(&mut self, Segment { p, q }: &Segment) -> bool {
     let back = self.points.back().unwrap();
 
     if back.equal(*p) {
       self.points.push_back(*q);
     } else if back.equal(*q) {
       self.points.push_back(*p);
-    } else if front.equal(*p) {
+    } else {
+      return false;
+    }
+    true
+  }
+
+  fn put_front(&mut self, Segment { p, q }: &Segment) -> bool {
+    let front = self.points.front().unwrap();
+
+    if front.equal(*p) {
       self.points.push_front(*q);
     } else if front.equal(*q) {
       self.points.push_front(*p);

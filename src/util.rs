@@ -44,7 +44,6 @@ pub fn ccw(o: Point, a: Point, b: Point) -> bool {
 
 #[inline]
 #[must_use]
-#[allow(clippy::trivially_copy_pass_by_ref)]
 pub fn cmp(a: &f64, b: &f64) -> Ordering {
   if a < b {
     Ordering::Less
