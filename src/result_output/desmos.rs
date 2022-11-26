@@ -7,13 +7,13 @@ use polygon_puzzle::{shapes::polygon::Polygon, traits::desmos::Desmos, util::equ
 
 use super::{WriteResult, RESULTS_DIR};
 
-pub struct DesmosOutputWriter {
+pub struct OutputWriter {
   file_handler: BufWriter<File>,
 }
 
 const EXPECT_WRITE_DATA: &str = "should be able to write to file";
 
-impl DesmosOutputWriter {
+impl OutputWriter {
   pub fn new() -> Self {
     let f = File::create(format!("{}/desmos.txt", RESULTS_DIR)).unwrap();
 
@@ -23,13 +23,13 @@ impl DesmosOutputWriter {
   }
 }
 
-impl Drop for DesmosOutputWriter {
+impl Drop for OutputWriter {
   fn drop(&mut self) {
     self.file_handler.flush().expect("should be able to flush");
   }
 }
 
-impl WriteResult for DesmosOutputWriter {
+impl WriteResult for OutputWriter {
   fn write_result(&mut self, boundary: f64, case_number: i32, p1: Polygon, p2: Polygon) {
     let s = if equal(boundary, 0_f64) {
       format!("(case #{}) No solution found\n", case_number)

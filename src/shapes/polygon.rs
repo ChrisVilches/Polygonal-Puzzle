@@ -1,6 +1,9 @@
 use crate::{
   constants::EPS,
-  iterators::{edge_iterator::EdgeIterator, vertex_iterator::VertexIterator},
+  iterators::{
+    alternate_iterator::AlternateIterator, edge_iterator::EdgeIterator,
+    vertex_iterator::VertexIterator,
+  },
   traits::{
     common_boundary::CommonBoundary,
     desmos::Desmos,
@@ -20,36 +23,13 @@ pub struct Polygon {
 impl IntersectsHeuristic for Polygon {
   #[allow(clippy::integer_division)]
   fn intersects(&self, other: &Self, prev: &mut (i32, i32)) -> bool {
-    let iters_i = ((self.len() / 2) + 1) as i32;
-    let iters_j = ((other.len() / 2) + 1) as i32;
-
-    for i in 0..iters_i {
-      for j in 0..iters_j {
+    // TODO: Not sure about the exact number of iterations I have to take from
+    //       the iterator.
+    for i in AlternateIterator::new().take(self.len()) {
+      for j in AlternateIterator::new().take(other.len()) {
         if Self::intersection_aux(self, other, prev.0 + i, prev.1 + j) {
           prev.0 += i;
           prev.1 += j;
-          return true;
-        }
-        if j > 0 && Self::intersection_aux(self, other, prev.0 + i, prev.1 - j) {
-          prev.0 += i;
-          prev.1 -= j;
-          return true;
-        }
-      }
-
-      if i == 0 {
-        continue;
-      }
-
-      for j in 0..iters_j {
-        if Self::intersection_aux(self, other, prev.0 - i, prev.1 + j) {
-          prev.0 -= i;
-          prev.1 += j;
-          return true;
-        }
-        if j > 0 && Self::intersection_aux(self, other, prev.0 - i, prev.1 - j) {
-          prev.0 -= i;
-          prev.1 -= j;
           return true;
         }
       }
@@ -81,6 +61,7 @@ impl CommonBoundary<Vec<Segment>> for Polygon {
         other
           .edges()
           .filter_map(move |e2: Segment| e1.common_boundary(&e2))
+          .filter(|s| s.length() > EPS)
       })
       .collect()
   }

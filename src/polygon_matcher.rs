@@ -42,22 +42,24 @@ fn collect_shifts(edges: &Polygon, vertices: &Polygon, right: bool, max_shift: f
     .collect()
 }
 
-fn optimal_shift(mut polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> (f64, f64) {
+fn collect_all_shifts(polygon1: &Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> Vec<f64> {
   let max_shift = base1 + base2;
   let mut shifts = [
     vec![base1, base2],
-    collect_shifts(&polygon1, polygon2, true, max_shift),
-    collect_shifts(polygon2, &polygon1, false, max_shift),
+    collect_shifts(polygon1, polygon2, true, max_shift),
+    collect_shifts(polygon2, polygon1, false, max_shift),
   ]
   .concat();
-
   shifts.sort_unstable_by(cmp);
+  shifts
+}
 
+fn optimal_shift(mut polygon1: Polygon, polygon2: &Polygon, base1: f64, base2: f64) -> (f64, f64) {
   let mut prev_shift_x = 0_f64;
   let mut solution = (0_f64, 0_f64);
   let mut prev = (0, 0);
 
-  for x in shifts {
+  for x in collect_all_shifts(&polygon1, polygon2, base1, base2) {
     if x - prev_shift_x < 0.1 {
       continue;
     }
@@ -95,14 +97,20 @@ fn bases(polygon: &Polygon, rotations: &[Polygon]) -> Vec<f64> {
     .collect()
 }
 
-#[must_use]
-pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> (Polygon, Polygon, f64) {
+fn both_rotations(polygon1: &Polygon, polygon2: &Polygon) -> (Vec<Polygon>, Vec<Polygon>) {
   let rotations1 = polygon1
     .rotations()
     .iter()
     .map(Polygon::negate)
     .collect::<Vec<Polygon>>();
   let rotations2 = polygon2.rotations();
+
+  (rotations1, rotations2)
+}
+
+#[must_use]
+pub fn best_match(polygon1: &Polygon, polygon2: &Polygon) -> (Polygon, Polygon, f64) {
+  let (rotations1, rotations2) = both_rotations(polygon1, polygon2);
 
   let base1 = bases(polygon1, &rotations1);
   let base2 = bases(polygon2, &rotations2);

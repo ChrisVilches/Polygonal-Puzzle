@@ -15,14 +15,14 @@ use std::{error::Error, io};
 mod result_output;
 use crossbeam::channel::{Receiver, Sender};
 use polygon_puzzle::{polygon_matcher, shapes::polygon::Polygon};
-use result_output::{desmos::DesmosOutputWriter, svg::SvgOutputWriter, WriteResult};
+use result_output::WriteResult;
 
-fn write_results_thread(r: Receiver<(Polygon, Polygon, f64)>) {
+fn write_results_thread(r: &Receiver<(Polygon, Polygon, f64)>) {
   let mut case_number = 1;
 
   let mut writes: [Box<dyn WriteResult>; 2] = [
-    Box::new(DesmosOutputWriter::new()),
-    Box::new(SvgOutputWriter {}),
+    Box::new(result_output::desmos::OutputWriter::new()),
+    Box::new(result_output::svg::OutputWriter {}),
   ];
 
   while let Ok((p1, p2, boundary)) = r.recv() {
@@ -54,16 +54,17 @@ fn main_thread(s: Sender<(Polygon, Polygon, f64)>) -> Result<(), Box<dyn Error>>
     println!("{:.12}", boundary);
   }
 
+  std::mem::drop(s);
+
   Ok(())
 }
 
 fn main() {
   let (s, r) = crossbeam::channel::unbounded();
 
-  // TODO: improve message (in main process "expect")
   crossbeam::scope(|scope| {
-    scope.spawn(|_| main_thread(s).expect("main process should work"));
-    scope.spawn(|_| write_results_thread(r));
+    scope.spawn(|_| main_thread(s).unwrap());
+    scope.spawn(|_| write_results_thread(&r));
   })
   .expect("both threads should exit without errors");
 }

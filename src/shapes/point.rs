@@ -14,11 +14,9 @@ pub struct Point {
 }
 
 impl SubAssign for Point {
-  fn sub_assign(&mut self, other: Self) {
-    *self = Self {
-      x: self.x - other.x,
-      y: self.y - other.y,
-    };
+  fn sub_assign(&mut self, rhs: Self) {
+    self.x -= rhs.x;
+    self.y -= rhs.y;
   }
 }
 

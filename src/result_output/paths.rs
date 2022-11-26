@@ -7,27 +7,36 @@ pub struct Path {
 }
 
 impl Path {
-  fn put(&mut self, Segment { p, q }: &Segment) -> bool {
-    if self.points.is_empty() {
-      self.points.push_back(*p);
-      self.points.push_back(*q);
-      return true;
-    }
+  fn put(&mut self, s: &Segment) -> bool {
+    // TODO: Does this work OK?
+    //       If it's empty, it gets added, but would the second condition execute?
+    //       Looks weird, but probably works.
+    self.put_empty(s) || self.put_sides(s)
+  }
 
+  fn put_sides(&mut self, Segment { p, q }: &Segment) -> bool {
     let front = self.points.front().unwrap();
     let back = self.points.back().unwrap();
 
     if back.equal(*p) {
       self.points.push_back(*q);
-      true
     } else if back.equal(*q) {
       self.points.push_back(*p);
-      true
     } else if front.equal(*p) {
       self.points.push_front(*q);
-      true
     } else if front.equal(*q) {
       self.points.push_front(*p);
+    } else {
+      return false;
+    }
+
+    true
+  }
+
+  fn put_empty(&mut self, Segment { p, q }: &Segment) -> bool {
+    if self.points.is_empty() {
+      self.points.push_back(*p);
+      self.points.push_back(*q);
       true
     } else {
       false
@@ -63,7 +72,7 @@ impl PathGroup {
     let mut paths = Self { paths: vec![] };
 
     for s in segments {
-      paths.put(s)
+      paths.put(s);
     }
 
     paths
