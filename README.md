@@ -8,6 +8,8 @@ A geometric algorithm that finds the maximum possible length of the common bound
 
 A Rust solution for the [Polygonal Puzzle](https://open.kattis.com/problems/puzzle2) problem.
 
+Results are converted into SVG. Example:
+
 <p align="center">
   <img src="https://github.com/ChrisVilches/Polygonal-Puzzle/blob/main/images/sample4.svg?raw=true" />
 </p>
