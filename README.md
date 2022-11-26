@@ -23,7 +23,7 @@ cargo run --release < tests/data/input
 Or compare output using [cpdiff](https://github.com/ChrisVilches/cpdiff):
 
 ```sh
-cargo run --release < tests/data/input | cpdiff - tests/data/output
+cargo run --release < tests/data/input | cpdiff tests/data/output
 ```
 
 ## Format & Lint
