@@ -9,10 +9,6 @@ A geometric algorithm that finds the maximum possible length of the common bound
 A Rust solution for the [Polygonal Puzzle](https://open.kattis.com/problems/puzzle2) problem.
 
 <p align="center">
-  <img src="https://github.com/ChrisVilches/Polygonal-Puzzle/blob/main/images/sample2.svg?raw=true" />
-</p>
-
-<p align="center">
   <img src="https://github.com/ChrisVilches/Polygonal-Puzzle/blob/main/images/sample3.svg?raw=true" />
 </p>
 
