@@ -23,8 +23,6 @@ pub struct Polygon {
 impl IntersectsHeuristic for Polygon {
   #[allow(clippy::integer_division)]
   fn intersects(&self, other: &Self, prev: &mut (i32, i32)) -> bool {
-    // TODO: Not sure about the exact number of iterations I have to take from
-    //       the iterator.
     for i in AlternateIterator::new().take(self.len()) {
       for j in AlternateIterator::new().take(other.len()) {
         if Self::intersection_aux(self, other, prev.0 + i, prev.1 + j) {
