@@ -46,12 +46,9 @@ impl PathGroup {
   }
 
   fn merge_once(&mut self) {
-    let removed_idx = self.merge_find_index();
-
-    self.paths = (0..self.paths.len())
-      .filter(|idx| Some(*idx) != removed_idx)
-      .map(|idx| self.paths[idx].clone())
-      .collect();
+    if let Some(idx) = self.merge_find_index() {
+      self.paths.remove(idx);
+    }
   }
 
   pub fn from_segments(segments: &[Segment]) -> Self {
