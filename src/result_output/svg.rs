@@ -11,6 +11,7 @@ const MARGIN: f64 = 10_f64;
 const COLOR_POLYGON_1: &str = "#5b65b3";
 const COLOR_POLYGON_2: &str = "#a64459";
 
+mod paths;
 mod shape_to_svg;
 
 pub struct OutputWriter {}

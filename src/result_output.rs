@@ -1,7 +1,6 @@
 use polygon_puzzle::shapes::polygon::Polygon;
 
 pub mod desmos;
-pub mod paths;
 pub mod svg;
 
 const RESULTS_DIR: &str = "results";

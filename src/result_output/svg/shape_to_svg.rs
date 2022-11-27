@@ -4,7 +4,7 @@ use polygon_puzzle::{
 };
 use svg::node::element::{path::Data, Path};
 
-use crate::result_output::paths::PathGroup;
+use super::paths::PathGroup;
 
 const COMMON_BOUNDARY_COLOR: &str = "#00FF00";
 const COMMON_BOUNDARY_STROKE_WIDTH: f64 = 3_f64;
