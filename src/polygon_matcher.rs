@@ -31,7 +31,7 @@ fn collect_shifts(edges: &Polygon, vertices: &Polygon, right: bool, max_shift: f
     .flat_map(|wall| {
       vertices
         .vertices()
-        .filter(move |(a, b, c)| ccw(*a, *b, *c))
+        .filter(|(a, b, c)| ccw(*a, *b, *c))
         .filter(move |(_, b, _)| range_contains(wall.p.y, wall.q.y, b.y))
         .filter(move |v| !wall.face_right() || face_left(*v))
         .filter(move |v| !wall.face_left() || face_right(*v))
