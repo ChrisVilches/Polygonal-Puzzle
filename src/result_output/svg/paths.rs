@@ -123,5 +123,8 @@ mod tests {
 
     group.put(&seg(100, 54, 7, 8));
     assert_eq!(group.paths.len(), 2);
+
+    assert_eq!(group.paths[0].points.len(), 2);
+    assert_eq!(group.paths[1].points.len(), 3);
   }
 }
