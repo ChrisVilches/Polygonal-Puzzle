@@ -12,7 +12,7 @@ const COMMON_BOUNDARY_STROKE_WIDTH: f64 = 3_f64;
 pub struct ShapeToSvg {}
 
 impl ShapeToSvg {
-  pub fn polyline_to_svg_data<'a, T>(mut points: T) -> Data
+  fn polyline_to_svg_data<'a, T>(mut points: T) -> Data
   where
     T: Iterator<Item = &'a Point>,
   {
