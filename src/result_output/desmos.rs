@@ -11,8 +11,6 @@ pub struct OutputWriter {
   file_handler: BufWriter<File>,
 }
 
-const EXPECT_WRITE_DATA: &str = "should be able to write to file";
-
 impl OutputWriter {
   pub fn new() -> Self {
     let f = File::create(format!("{}/desmos.txt", RESULTS_DIR)).unwrap();
@@ -46,6 +44,6 @@ impl WriteResult for OutputWriter {
     self
       .file_handler
       .write_all((s + "\n").as_bytes())
-      .expect(EXPECT_WRITE_DATA);
+      .expect("should be able to write to file");
   }
 }
