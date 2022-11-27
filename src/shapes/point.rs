@@ -23,7 +23,7 @@ impl SubAssign for Point {
 
 impl Display for Point {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "({:.3}, {:.3})", self.x, self.y)
+    write!(f, "({:.6}, {:.6})", self.x, self.y)
   }
 }
 
@@ -121,8 +121,8 @@ mod tests {
     assert_eq!(s.parse::<Point>(), res);
   }
 
-  #[test_case(Point { x: 5_f64, y: 6_f64 }, "(5.000, 6.000)")]
-  #[test_case(Point { x: 1.23456, y: 6.54 }, "(1.235, 6.540)")]
+  #[test_case(Point { x: 5_f64, y: 6_f64 }, "(5.000000, 6.000000)")]
+  #[test_case(Point { x: 1.23456, y: 6.54 }, "(1.234560, 6.540000)")]
   fn test_display(p: Point, res: &str) {
     assert_eq!(format!("{}", p), res);
   }

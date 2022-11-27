@@ -67,11 +67,14 @@ impl CommonBoundary<Vec<Segment>> for Polygon {
 
 impl Desmos for Polygon {
   fn fmt_desmos(&self) -> String {
-    self
-      .edges()
-      .map(|s| s.fmt_desmos())
+    let points = self
+      .vertices
+      .iter()
+      .map(Point::to_string)
       .collect::<Vec<String>>()
-      .join("\n")
+      .join(", ");
+
+    format!("polygon({})", points)
   }
 }
 

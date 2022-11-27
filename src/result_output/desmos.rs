@@ -35,7 +35,7 @@ impl WriteResult for OutputWriter {
       format!("(case #{}) No solution found\n", case_number)
     } else {
       format!(
-        "(case #{}) Solution found ({:.12})\n{}\n\n{}\n",
+        "(case #{}) Solution found ({:.12})\n{}\n{}\n",
         case_number,
         boundary,
         p1.fmt_desmos(),

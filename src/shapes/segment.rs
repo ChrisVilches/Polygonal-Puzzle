@@ -1,6 +1,6 @@
 use crate::{
   constants::EPS,
-  traits::{common_boundary::CommonBoundary, desmos::Desmos, intersection::Intersects},
+  traits::{common_boundary::CommonBoundary, intersection::Intersects},
   util::{equal, orientation},
 };
 
@@ -10,15 +10,6 @@ use super::point::Point;
 pub struct Segment {
   pub p: Point,
   pub q: Point,
-}
-
-impl Desmos for Segment {
-  fn fmt_desmos(&self) -> String {
-    format!(
-      r"\left(\left(1-t\right)\cdot{:.6}+t\cdot{:.6},\left(1-t\right)\cdot{:.6}+t\cdot{:.6}\right)",
-      self.p.x, self.q.x, self.p.y, self.q.y
-    )
-  }
 }
 
 impl Intersects for Segment {
