@@ -72,6 +72,8 @@ impl PathGroup {
 
 #[cfg(test)]
 mod tests {
+  use std::collections::HashSet;
+
   use super::*;
   use rand::{seq::SliceRandom, thread_rng};
   use test_case::test_case;
@@ -87,7 +89,6 @@ mod tests {
       y: f64::from(y1),
     };
 
-    // TODO: Test that point order is shuffled correctly (again)
     let (p, q) = if rand::random::<f64>() > 0.5 {
       (point1, point2)
     } else {
@@ -117,143 +118,51 @@ mod tests {
     assert_eq!(group.paths[1].len(), 3);
   }
 
-  #[test]
-  fn test_paths_put_merge_1() {
-    for _ in 0..10_000 {
-      let mut group = PathGroup { paths: vec![] };
-      assert_eq!(group.paths.len(), 0);
-
-      group.put(&seg(0, 0, 5, 0));
-      assert_eq!(group.paths.len(), 1);
-
-      group.put(&seg(15, 0, 10, 0));
-      assert_eq!(group.paths.len(), 2);
-
-      group.put(&seg(5, 0, 10, 0));
-      assert_eq!(group.paths.len(), 1);
-    }
-  }
-
-  #[test]
-  fn test_paths_put_merge_2() {
-    for _ in 0..10_000 {
-      let mut group = PathGroup { paths: vec![] };
-      assert_eq!(group.paths.len(), 0);
-
-      group.put(&seg(15, 0, 10, 0));
-      assert_eq!(group.paths.len(), 1);
-
-      group.put(&seg(0, 0, 5, 0));
-      assert_eq!(group.paths.len(), 2);
-
-      group.put(&seg(5, 0, 10, 0));
-      assert_eq!(group.paths.len(), 1);
-    }
-  }
-
-  #[test]
-  fn test_paths_put_merge_3() {
-    for _ in 0..10_000 {
-      let mut group = PathGroup { paths: vec![] };
-      assert_eq!(group.paths.len(), 0);
-
-      group.put(&seg(5, 0, 10, 0));
-      assert_eq!(group.paths.len(), 1);
-
-      group.put(&seg(1, 0, 3, 0));
-      assert_eq!(group.paths.len(), 2);
-
-      group.put(&seg(3, 0, 5, 0));
-      assert_eq!(group.paths.len(), 1);
-    }
-  }
-
-  #[test]
-  fn test_paths_put_merge_4() {
-    for _ in 0..10_000 {
-      let mut group = PathGroup { paths: vec![] };
-      let a = seg(490, 410, 490, 390);
-      let b = seg(490, 390, 470, 390);
-      let c = seg(490, 410, 510, 410);
-
-      group.put(&a);
-      assert_eq!(group.paths.len(), 1);
-
-      group.put(&b);
-      assert_eq!(group.paths.len(), 1);
-
-      group.put(&c);
-      assert_eq!(group.paths.len(), 1);
-    }
-  }
-
-  #[test]
-  fn test_paths_put_merge_shuffle() {
-    let mut r = thread_rng();
+  #[test_case(vec![], 1, 1)]
+  #[test_case(vec![0], 1, 1)]
+  #[test_case(vec![50], 2, 1)]
+  #[test_case(vec![50, 70], 3, 1)]
+  #[test_case(vec![50, 69, 70], 3, 1)]
+  #[test_case(vec![50, 68, 70], 4, 1)]
+  #[test_case(vec![0, 149], 1, 1)]
+  #[test_case(vec![0, 148], 2, 1)]
+  #[test_case(vec![], 75, 2)]
+  fn test_paths_put_merge_shuffle(skip: Vec<i32>, paths_result: usize, step_by: usize) {
+    let skip_set: HashSet<i32> = skip.into_iter().collect();
 
     for _ in 0..10_000 {
-      let mut segments = vec![];
-      for x in 0..100 {
-        segments.push(seg(x, 10, x + 1, 10));
-      }
+      let mut segments: Vec<Segment> = (0..150)
+        .step_by(step_by)
+        .filter(|i| !skip_set.contains(i))
+        .map(|x| seg(x, 10, x + 1, 10))
+        .collect();
+      segments.shuffle(&mut thread_rng());
 
-      segments.shuffle(&mut r);
       let group = PathGroup::from_segments(&segments);
-      assert_eq!(group.paths.len(), 1);
+      assert_eq!(group.paths.len(), paths_result);
     }
   }
 
-  #[test]
-  fn test_paths_put_merge_shuffle_remove_one() {
-    let mut r = thread_rng();
-
-    for _ in 0..10_000 {
-      let mut segments = vec![];
-      for x in 0..100 {
-        if x == 50 {
-          continue;
-        }
-        segments.push(seg(x, 10, x + 1, 10));
-      }
-      segments.shuffle(&mut r);
-      let group = PathGroup::from_segments(&segments);
-      assert_eq!(group.paths.len(), 2);
-    }
+  #[test_case(&[1, 2, 3], &[4, 5, 6], false, &[4, 5, 6])]
+  #[test_case(&[6, 8, 9], &[4, 5, 6], true, &[4, 5, 6, 8, 9])]
+  #[test_case(&[8, 9, 10], &[4, 5, 6], false, &[4, 5, 6])]
+  #[test_case(&[9, 12, 14], &[4, 8, 9], true, &[4, 8, 9, 12, 14])]
+  #[test_case(&[1, 2], &[2, 3, 4], true, &[1, 2, 3, 4])]
+  fn test_try_merge(s: &[i32], d: &[i32], result: bool, d2: &[i32]) {
+    let src = VecDeque::from_iter(s.iter().cloned());
+    let mut dest = VecDeque::from_iter(d.iter().cloned());
+    assert_eq!(try_merge(&mut dest, &src), result);
+    assert_eq!(dest, d2);
   }
 
-  #[test]
-  fn test_try_merge() {
-    let src = VecDeque::from_iter([1, 2, 3]);
-    let mut dest = VecDeque::from_iter([4, 5, 6]);
-    assert!(!try_merge(&mut dest, &src));
-
-    let src = VecDeque::from_iter([6, 8, 9]);
-    let mut dest = VecDeque::from_iter([4, 5, 6]);
-    assert!(try_merge(&mut dest, &src));
-    assert_eq!(dest, [4, 5, 6, 8, 9]);
-
-    let src = VecDeque::from_iter([8, 9, 10]);
-    assert!(!try_merge(&mut dest, &src));
-
-    let src = VecDeque::from_iter([9, 12, 14]);
-    assert!(try_merge(&mut dest, &src));
-    assert_eq!(dest, [4, 5, 6, 8, 9, 12, 14]);
-  }
-
-  #[test]
+  #[test_case(&[1, 2, 3], &[])]
+  #[test_case(&[], &[4, 5, 6])]
+  #[test_case(&[], &[])]
   #[should_panic]
-  fn test_try_merge_empty_src() {
-    let src = VecDeque::from_iter([]);
-    let mut dest = VecDeque::from_iter([4, 5, 6]);
-    assert!(!try_merge(&mut dest, &src));
-  }
-
-  #[test]
-  #[should_panic]
-  fn test_try_merge_empty_dest() {
-    let src = VecDeque::from_iter([1, 2, 3]);
-    let mut dest = VecDeque::from_iter([]);
-    assert!(!try_merge(&mut dest, &src));
+  fn test_try_merge_panic(s: &[i32], d: &[i32]) {
+    let src = VecDeque::from_iter(s.iter().cloned());
+    let mut dest = VecDeque::from_iter(d.iter().cloned());
+    try_merge(&mut dest, &src);
   }
 
   #[test_case(2, 3)]
@@ -270,5 +179,13 @@ mod tests {
 
     assert_eq!(*ref_a, i + 1);
     assert_eq!(*ref_b, j + 5);
+  }
+
+  #[test_case(2, 2)]
+  #[test_case(3, 2)]
+  #[should_panic]
+  fn test_borrow_mut_two_panic(i: usize, j: usize) {
+    let mut v = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
+    let (_ref_a, _ref_b) = borrow_mut_two(&mut v, i, j);
   }
 }
