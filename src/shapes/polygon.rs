@@ -15,7 +15,7 @@ use std::{borrow::Borrow, str::FromStr};
 
 use super::{point::Point, segment::Segment};
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Polygon {
   pub vertices: Vec<Point>,
 }
