@@ -54,17 +54,17 @@ impl PolylineSet {
     self.nodes[idx_q].add_link(idx_p);
   }
 
-  fn dfs(&self, u: usize, visited: &mut Vec<bool>, polylines: &mut Vec<Vec<Point>>) {
+  fn dfs(&self, u: usize, visited: &mut Vec<bool>, polyline: &mut Vec<Point>) {
     if visited[u] {
       return;
     }
 
     visited[u] = true;
 
-    polylines.last_mut().unwrap().push(self.nodes[u].value);
+    polyline.push(self.nodes[u].value);
 
     for v in self.nodes[u].neighbors.iter().flatten() {
-      self.dfs(*v, visited, polylines);
+      self.dfs(*v, visited, polyline);
     }
   }
 
@@ -83,9 +83,9 @@ impl PolylineSet {
         continue;
       }
 
-      polylines.push(vec![]);
-
-      self.dfs(node_idx, &mut visited, &mut polylines);
+      let mut polyline = Vec::<Point>::new();
+      self.dfs(node_idx, &mut visited, &mut polyline);
+      polylines.push(polyline);
     }
 
     polylines
