@@ -1,11 +1,9 @@
 mod test_case;
 
-// TODO: The project (crate) should be called "polygonal puzzle", not "polygon puzzle"
-
 #[macro_use]
 mod macros;
 use crate::test_case::TestCase;
-use polygon_puzzle::{
+use polygonal_puzzle::{
   polygon_matcher,
   shapes::{polygon::Polygon, polyline_set::PolylineSet, segment::Segment},
   traits::common_boundary::CommonBoundary,

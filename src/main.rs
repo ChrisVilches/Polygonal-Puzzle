@@ -14,7 +14,7 @@ use std::{error::Error, io};
 
 mod result_output;
 use crossbeam::channel::{Receiver, Sender};
-use polygon_puzzle::{polygon_matcher, shapes::polygon::Polygon};
+use polygonal_puzzle::{polygon_matcher, shapes::polygon::Polygon};
 use result_output::WriteResult;
 
 fn write_results_thread(r: &Receiver<(Polygon, Polygon, f64)>) {

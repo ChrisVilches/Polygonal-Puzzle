@@ -1,4 +1,4 @@
-use polygon_puzzle::shapes::polygon::Polygon;
+use polygonal_puzzle::shapes::polygon::Polygon;
 
 pub mod desmos;
 pub mod svg;

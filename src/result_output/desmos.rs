@@ -3,7 +3,7 @@ use std::{
   io::{BufWriter, Write},
 };
 
-use polygon_puzzle::{shapes::polygon::Polygon, traits::desmos::Desmos, util::equal};
+use polygonal_puzzle::{shapes::polygon::Polygon, traits::desmos::Desmos, util::equal};
 
 use super::{WriteResult, RESULTS_DIR};
 

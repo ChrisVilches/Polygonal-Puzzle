@@ -133,7 +133,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "polygon_puzzle"
+name = "polygonal_puzzle"
 version = "0.1.0"
 dependencies = [
  "crossbeam",

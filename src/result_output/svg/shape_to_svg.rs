@@ -1,4 +1,4 @@
-use polygon_puzzle::{
+use polygonal_puzzle::{
   shapes::{point::Point, polygon::Polygon, polyline_set::PolylineSet, segment::Segment},
   traits::common_boundary::CommonBoundary,
 };

@@ -1,9 +1,9 @@
 use self::shape_to_svg::ShapeToSvg;
 
 use super::{WriteResult, RESULTS_DIR};
-use polygon_puzzle::shapes::point::Point;
-use polygon_puzzle::shapes::polygon::Polygon;
-use polygon_puzzle::util::{cmp, equal, max, min};
+use polygonal_puzzle::shapes::point::Point;
+use polygonal_puzzle::shapes::polygon::Polygon;
+use polygonal_puzzle::util::{cmp, equal, max, min};
 use svg::Document;
 
 const FACTOR: f64 = 20_f64;
