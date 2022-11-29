@@ -1,10 +1,8 @@
 use polygon_puzzle::{
-  shapes::{point::Point, polygon::Polygon, segment::Segment},
+  shapes::{point::Point, polygon::Polygon, polyline_set::PolylineSet, segment::Segment},
   traits::common_boundary::CommonBoundary,
 };
 use svg::node::element::{path::Data, Path};
-
-use super::path_group::PathGroup;
 
 const COMMON_BOUNDARY_COLOR: &str = "#00FF00";
 const COMMON_BOUNDARY_STROKE_WIDTH: f64 = 3_f64;
@@ -34,8 +32,8 @@ impl ShapeToSvg {
   pub fn boundary_to_svg_paths(p1: &Polygon, p2: &Polygon) -> Vec<Path> {
     let segments = <Polygon as CommonBoundary<Vec<Segment>>>::common_boundary(p1, p2);
 
-    PathGroup::from_segments(&segments)
-      .paths
+    PolylineSet::from_segments(&segments)
+      .polylines
       .into_iter()
       .map(|p| Self::polyline_to_svg_data(p.iter()))
       .map(|d| {

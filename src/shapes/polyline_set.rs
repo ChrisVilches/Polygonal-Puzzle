@@ -1,4 +1,4 @@
-use polygon_puzzle::shapes::{point::Point, segment::Segment};
+use crate::shapes::{point::Point, segment::Segment};
 use std::collections::VecDeque;
 
 fn try_merge<T: PartialEq + Copy>(dest: &mut VecDeque<T>, src: &VecDeque<T>) -> bool {
@@ -28,22 +28,22 @@ fn borrow_mut_two<T>(v: &mut [T], i: usize, j: usize) -> (&mut T, &mut T) {
   (&mut left[i], &mut right[0])
 }
 
-pub struct PathGroup {
-  pub paths: Vec<VecDeque<Point>>,
+pub struct PolylineSet {
+  pub polylines: Vec<VecDeque<Point>>,
 }
 
-impl PathGroup {
+impl PolylineSet {
   fn put(&mut self, s: &Segment) {
-    let new_path = VecDeque::<Point>::from_iter([s.p, s.q]);
-    self.paths.push(new_path);
+    let new = VecDeque::<Point>::from_iter([s.p, s.q]);
+    self.polylines.push(new);
     self.merge_once();
     self.merge_once();
   }
 
   fn merge_find_index(&mut self) -> Option<usize> {
-    for i in 0..self.paths.len() {
-      for j in i + 1..self.paths.len() {
-        let (a, b) = borrow_mut_two(&mut self.paths, i, j);
+    for i in 0..self.len() {
+      for j in i + 1..self.len() {
+        let (a, b) = borrow_mut_two(&mut self.polylines, i, j);
 
         if try_merge(a, b) {
           return Some(j);
@@ -53,20 +53,31 @@ impl PathGroup {
     None
   }
 
+  #[must_use]
+  pub fn len(&self) -> usize {
+    self.polylines.len()
+  }
+
+  #[must_use]
+  pub fn is_empty(&self) -> bool {
+    self.polylines.is_empty()
+  }
+
   fn merge_once(&mut self) {
     if let Some(idx) = self.merge_find_index() {
-      self.paths.remove(idx);
+      self.polylines.remove(idx);
     }
   }
 
+  #[must_use]
   pub fn from_segments(segments: &[Segment]) -> Self {
-    let mut paths = Self { paths: vec![] };
+    let mut polylines = Self { polylines: vec![] };
 
     for s in segments {
-      paths.put(s);
+      polylines.put(s);
     }
 
-    paths
+    polylines
   }
 }
 
@@ -101,21 +112,21 @@ mod tests {
   }
 
   #[test]
-  fn test_paths_put() {
-    let mut group = PathGroup { paths: vec![] };
-    assert_eq!(group.paths.len(), 0);
+  fn test_polyline_set_put() {
+    let mut set = PolylineSet { polylines: vec![] };
+    assert_eq!(set.len(), 0);
 
-    group.put(&seg(0, 0, 0, 1));
-    assert_eq!(group.paths.len(), 1);
+    set.put(&seg(0, 0, 0, 1));
+    assert_eq!(set.len(), 1);
 
-    group.put(&seg(5, 5, 7, 8));
-    assert_eq!(group.paths.len(), 2);
+    set.put(&seg(5, 5, 7, 8));
+    assert_eq!(set.len(), 2);
 
-    group.put(&seg(100, 54, 7, 8));
-    assert_eq!(group.paths.len(), 2);
+    set.put(&seg(100, 54, 7, 8));
+    assert_eq!(set.len(), 2);
 
-    assert_eq!(group.paths[0].len(), 2);
-    assert_eq!(group.paths[1].len(), 3);
+    assert_eq!(set.polylines[0].len(), 2);
+    assert_eq!(set.polylines[1].len(), 3);
   }
 
   #[test_case(vec![], 1, 1)]
@@ -127,7 +138,7 @@ mod tests {
   #[test_case(vec![0, 149], 1, 1)]
   #[test_case(vec![0, 148], 2, 1)]
   #[test_case(vec![], 75, 2)]
-  fn test_paths_put_merge_shuffle(skip: Vec<i32>, paths_result: usize, step_by: usize) {
+  fn test_polyline_set_put_shuffle(skip: Vec<i32>, set_size: usize, step_by: usize) {
     let skip_set: HashSet<i32> = skip.into_iter().collect();
 
     for _ in 0..10_000 {
@@ -138,8 +149,8 @@ mod tests {
         .collect();
       segments.shuffle(&mut thread_rng());
 
-      let group = PathGroup::from_segments(&segments);
-      assert_eq!(group.paths.len(), paths_result);
+      let set = PolylineSet::from_segments(&segments);
+      assert_eq!(set.len(), set_size);
     }
   }
 
