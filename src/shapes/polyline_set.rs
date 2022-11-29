@@ -1,80 +1,105 @@
+use std::collections::HashMap;
+
 use crate::shapes::{point::Point, segment::Segment};
-use std::collections::VecDeque;
 
-fn try_merge<T: PartialEq + Copy>(dest: &mut VecDeque<T>, src: &VecDeque<T>) -> bool {
-  let src_front = *src.front().unwrap();
-  let src_back = *src.back().unwrap();
-  let dest_front = *dest.front().unwrap();
-  let dest_back = *dest.back().unwrap();
-
-  let prev_len = dest.len();
-
-  if dest_back == src_front {
-    dest.extend(src.iter().skip(1));
-  } else if dest_back == src_back {
-    dest.extend(src.iter().rev().skip(1));
-  } else if dest_front == src_front {
-    src.iter().skip(1).for_each(|t| dest.push_front(*t));
-  } else if dest_front == src_back {
-    src.iter().rev().skip(1).for_each(|t| dest.push_front(*t));
-  }
-
-  prev_len != dest.len()
+struct Node {
+  value: Point,
+  neighbors: [Option<usize>; 2],
 }
 
-fn borrow_mut_two<T>(v: &mut [T], i: usize, j: usize) -> (&mut T, &mut T) {
-  assert!(i < j);
-  let (left, right) = v.split_at_mut(j);
-  (&mut left[i], &mut right[0])
+impl Node {
+  const fn new(p: Point) -> Self {
+    Self {
+      value: p,
+      neighbors: [None, None],
+    }
+  }
+
+  fn is_full(&self) -> bool {
+    self.neighbors.iter().all(Option::is_some)
+  }
+
+  fn add_link(&mut self, node_idx: usize) {
+    assert!(!self.is_full(), "cannot add neighbors");
+
+    if self.neighbors[0].is_none() {
+      self.neighbors[0] = Some(node_idx);
+    } else {
+      self.neighbors[1] = Some(node_idx);
+    }
+  }
 }
 
 pub struct PolylineSet {
-  pub polylines: Vec<VecDeque<Point>>,
+  nodes: Vec<Node>,
+  point_to_node_idx: HashMap<Point, usize>,
 }
 
 impl PolylineSet {
-  fn put(&mut self, s: &Segment) {
-    let new = VecDeque::<Point>::from_iter([s.p, s.q]);
-    self.polylines.push(new);
-    self.merge_once();
-    self.merge_once();
+  fn find_or_create_index(&mut self, p: Point) -> usize {
+    if let Some(idx) = self.point_to_node_idx.get(&p) {
+      *idx
+    } else {
+      self.nodes.push(Node::new(p));
+      let new_idx = self.nodes.len() - 1;
+      self.point_to_node_idx.insert(p, new_idx);
+      new_idx
+    }
   }
 
-  fn merge_find_index(&mut self) -> Option<usize> {
-    for i in 0..self.len() {
-      for j in i + 1..self.len() {
-        let (a, b) = borrow_mut_two(&mut self.polylines, i, j);
+  fn put(&mut self, p: Point, q: Point) {
+    let idx_p = self.find_or_create_index(p);
+    let idx_q = self.find_or_create_index(q);
+    self.nodes[idx_p].add_link(idx_q);
+    self.nodes[idx_q].add_link(idx_p);
+  }
 
-        if try_merge(a, b) {
-          return Some(j);
-        }
+  fn dfs(&self, u: usize, visited: &mut Vec<bool>, polylines: &mut Vec<Vec<Point>>) {
+    if visited[u] {
+      return;
+    }
+
+    visited[u] = true;
+
+    polylines.last_mut().unwrap().push(self.nodes[u].value);
+
+    for v in self.nodes[u].neighbors.iter().flatten() {
+      self.dfs(*v, visited, polylines);
+    }
+  }
+
+  #[must_use]
+  pub fn get_polylines(&self) -> Vec<Vec<Point>> {
+    let mut visited = vec![false; self.nodes.len()];
+
+    let mut polylines: Vec<Vec<Point>> = vec![];
+
+    for node_idx in 0..self.nodes.len() {
+      if self.nodes[node_idx].is_full() {
+        continue;
       }
+
+      if visited[node_idx] {
+        continue;
+      }
+
+      polylines.push(vec![]);
+
+      self.dfs(node_idx, &mut visited, &mut polylines);
     }
-    None
-  }
 
-  #[must_use]
-  pub fn len(&self) -> usize {
-    self.polylines.len()
-  }
-
-  #[must_use]
-  pub fn is_empty(&self) -> bool {
-    self.polylines.is_empty()
-  }
-
-  fn merge_once(&mut self) {
-    if let Some(idx) = self.merge_find_index() {
-      self.polylines.remove(idx);
-    }
+    polylines
   }
 
   #[must_use]
   pub fn from_segments(segments: &[Segment]) -> Self {
-    let mut polylines = Self { polylines: vec![] };
+    let mut polylines = Self {
+      nodes: vec![],
+      point_to_node_idx: HashMap::new(),
+    };
 
     for s in segments {
-      polylines.put(s);
+      polylines.put(s.p, s.q);
     }
 
     polylines
@@ -113,20 +138,23 @@ mod tests {
 
   #[test]
   fn test_polyline_set_put() {
-    let mut set = PolylineSet { polylines: vec![] };
-    assert_eq!(set.len(), 0);
+    let mut set = PolylineSet::from_segments(&[]);
+    assert_eq!(set.get_polylines().len(), 0);
 
-    set.put(&seg(0, 0, 0, 1));
-    assert_eq!(set.len(), 1);
+    let Segment { p, q } = seg(0, 0, 0, 1);
+    set.put(p, q);
+    assert_eq!(set.get_polylines().len(), 1);
 
-    set.put(&seg(5, 5, 7, 8));
-    assert_eq!(set.len(), 2);
+    let Segment { p, q } = seg(5, 5, 7, 8);
+    set.put(p, q);
+    assert_eq!(set.get_polylines().len(), 2);
 
-    set.put(&seg(100, 54, 7, 8));
-    assert_eq!(set.len(), 2);
+    let Segment { p, q } = seg(100, 54, 7, 8);
+    set.put(p, q);
+    assert_eq!(set.get_polylines().len(), 2);
 
-    assert_eq!(set.polylines[0].len(), 2);
-    assert_eq!(set.polylines[1].len(), 3);
+    assert_eq!(set.get_polylines()[0].len(), 2);
+    assert_eq!(set.get_polylines()[1].len(), 3);
   }
 
   #[test_case(vec![], 1, 1)]
@@ -138,10 +166,10 @@ mod tests {
   #[test_case(vec![0, 149], 1, 1)]
   #[test_case(vec![0, 148], 2, 1)]
   #[test_case(vec![], 75, 2)]
-  fn test_polyline_set_put_shuffle(skip: Vec<i32>, set_size: usize, step_by: usize) {
+  fn test_polyline_set_from_segments(skip: Vec<i32>, set_size: usize, step_by: usize) {
     let skip_set: HashSet<i32> = skip.into_iter().collect();
 
-    for _ in 0..10_000 {
+    for _ in 0..100_000 {
       let mut segments: Vec<Segment> = (0..150)
         .step_by(step_by)
         .filter(|i| !skip_set.contains(i))
@@ -150,53 +178,20 @@ mod tests {
       segments.shuffle(&mut thread_rng());
 
       let set = PolylineSet::from_segments(&segments);
-      assert_eq!(set.len(), set_size);
+      assert_eq!(set.get_polylines().len(), set_size);
     }
   }
 
-  #[test_case(&[1, 2, 3], &[4, 5, 6], false, &[4, 5, 6])]
-  #[test_case(&[6, 8, 9], &[4, 5, 6], true, &[4, 5, 6, 8, 9])]
-  #[test_case(&[8, 9, 10], &[4, 5, 6], false, &[4, 5, 6])]
-  #[test_case(&[9, 12, 14], &[4, 8, 9], true, &[4, 8, 9, 12, 14])]
-  #[test_case(&[1, 2], &[2, 3, 4], true, &[1, 2, 3, 4])]
-  fn test_try_merge(s: &[i32], d: &[i32], result: bool, d2: &[i32]) {
-    let src = VecDeque::from_iter(s.iter().cloned());
-    let mut dest = VecDeque::from_iter(d.iter().cloned());
-    assert_eq!(try_merge(&mut dest, &src), result);
-    assert_eq!(dest, d2);
-  }
-
-  #[test_case(&[1, 2, 3], &[])]
-  #[test_case(&[], &[4, 5, 6])]
-  #[test_case(&[], &[])]
+  #[test]
   #[should_panic]
-  fn test_try_merge_panic(s: &[i32], d: &[i32]) {
-    let src = VecDeque::from_iter(s.iter().cloned());
-    let mut dest = VecDeque::from_iter(d.iter().cloned());
-    try_merge(&mut dest, &src);
-  }
+  fn test_polyline_set_from_segments_panic() {
+    let a = seg(0, 0, 1, 0);
+    let b = seg(2, 0, 3, 0);
+    let c = seg(1, 0, 2, 0);
 
-  #[test_case(2, 3)]
-  #[test_case(0, 7)]
-  #[test_case(1, 6)]
-  #[test_case(3, 8)]
-  #[test_case(5, 6)]
-  fn test_borrow_mut_two(i: usize, j: usize) {
-    let mut v = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-    let (ref_a, ref_b) = borrow_mut_two(&mut v, i, j);
+    let mut polyline_set = PolylineSet::from_segments(&[a, b, c]);
 
-    *ref_a += 1;
-    *ref_b += 5;
-
-    assert_eq!(v[i], i + 1);
-    assert_eq!(v[j], j + 5);
-  }
-
-  #[test_case(2, 2)]
-  #[test_case(3, 2)]
-  #[should_panic]
-  fn test_borrow_mut_two_panic(i: usize, j: usize) {
-    let mut v = vec![0, 1, 2, 3, 4, 5, 6, 7, 8];
-    let (_ref_a, _ref_b) = borrow_mut_two(&mut v, i, j);
+    let Segment { p, q } = seg(1, 0, 1, 2);
+    polyline_set.put(p, q);
   }
 }

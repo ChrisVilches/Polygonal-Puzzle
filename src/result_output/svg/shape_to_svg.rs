@@ -33,7 +33,7 @@ impl ShapeToSvg {
     let segments = <Polygon as CommonBoundary<Vec<Segment>>>::common_boundary(p1, p2);
 
     PolylineSet::from_segments(&segments)
-      .polylines
+      .get_polylines()
       .into_iter()
       .map(|p| Self::polyline_to_svg_data(p.iter()))
       .map(|d| {

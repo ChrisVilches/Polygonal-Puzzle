@@ -14,6 +14,17 @@ pub struct Point {
   pub y: f64,
 }
 
+impl std::hash::Hash for Point {
+  fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    let x = (self.x * 1000_f64).round() as i64;
+    let y = (self.y * 1000_f64).round() as i64;
+    x.hash(state);
+    y.hash(state);
+  }
+}
+
+impl Eq for Point {}
+
 impl SubAssign for Point {
   fn sub_assign(&mut self, rhs: Self) {
     self.x -= rhs.x;

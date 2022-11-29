@@ -29,14 +29,14 @@ fn test_official_data() {
       &<Polygon as CommonBoundary<Vec<Segment>>>::common_boundary(&p1, &p2),
     );
 
+    let common_boundaries_result = polyline_set.get_polylines().len();
+
     println!(
       "{:.12} == {:.12} (common boundaries: {})",
-      correct_answer,
-      common_boundary_length,
-      polyline_set.len()
+      correct_answer, common_boundary_length, common_boundaries_result
     );
     assert_similar!(correct_answer, common_boundary_length);
-    assert_eq!(boundary_count, polyline_set.len());
+    assert_eq!(boundary_count, common_boundaries_result);
   }
 }
 
