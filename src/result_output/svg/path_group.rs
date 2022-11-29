@@ -177,8 +177,8 @@ mod tests {
     *ref_a += 1;
     *ref_b += 5;
 
-    assert_eq!(*ref_a, i + 1);
-    assert_eq!(*ref_b, j + 5);
+    assert_eq!(v[i], i + 1);
+    assert_eq!(v[j], j + 5);
   }
 
   #[test_case(2, 2)]
