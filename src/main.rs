@@ -20,13 +20,13 @@ use result_output::WriteResult;
 fn write_results_thread(r: &Receiver<(Polygon, Polygon, f64)>) {
   let mut case_number = 1;
 
-  let mut writes: [Box<dyn WriteResult>; 2] = [
+  let mut writers: [Box<dyn WriteResult>; 2] = [
     Box::new(result_output::desmos::OutputWriter::new()),
     Box::new(result_output::svg::OutputWriter {}),
   ];
 
   while let Ok((p1, p2, boundary)) = r.recv() {
-    writes
+    writers
       .iter_mut()
       .for_each(|w| w.write_result(boundary, case_number, p1.clone(), p2.clone()));
 
