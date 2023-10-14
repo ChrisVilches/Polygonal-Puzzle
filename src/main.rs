@@ -9,6 +9,7 @@
 #![allow(clippy::cast_sign_loss)]
 #![allow(clippy::cast_possible_truncation)]
 #![allow(clippy::cast_possible_wrap)]
+#![allow(clippy::significant_drop_tightening)]
 
 use std::{error::Error, io};
 
@@ -50,7 +51,7 @@ fn main_thread(s: Sender<(Polygon, Polygon, f64)>) -> Result<(), Box<dyn Error>>
     let (p1, p2, boundary) = polygon_matcher::best_match(&polygon1, &polygon2);
 
     s.send((p1.clone(), p2.clone(), boundary))?;
-    println!("{:.12}", boundary);
+    println!("{boundary:.12}");
   }
 
   std::mem::drop(s);

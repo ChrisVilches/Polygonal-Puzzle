@@ -75,7 +75,7 @@ impl Segment {
       v.x - self.p.x
     } else {
       let slope = (self.q.y - self.p.y) / (self.q.x - self.p.x);
-      let b = self.p.y - self.p.x * slope;
+      let b = self.p.x.mul_add(-slope, self.p.y);
       v.x - (v.y - b) / slope
     }
   }

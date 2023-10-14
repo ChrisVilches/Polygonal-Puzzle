@@ -13,7 +13,7 @@ pub struct OutputWriter {
 
 impl OutputWriter {
   pub fn new() -> Self {
-    let f = File::create(format!("{}/desmos.txt", RESULTS_DIR)).unwrap();
+    let f = File::create(format!("{RESULTS_DIR}/desmos.txt")).unwrap();
 
     Self {
       file_handler: BufWriter::new(f),
@@ -30,7 +30,7 @@ impl Drop for OutputWriter {
 impl WriteResult for OutputWriter {
   fn write_result(&mut self, boundary: f64, case_number: i32, p1: Polygon, p2: Polygon) {
     let s = if equal(boundary, 0_f64) {
-      format!("(case #{}) No solution found\n", case_number)
+      format!("(case #{case_number}) No solution found\n")
     } else {
       format!(
         "(case #{}) Solution found ({:.12})\n{}\n{}\n",

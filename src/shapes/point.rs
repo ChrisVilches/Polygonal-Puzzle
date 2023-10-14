@@ -90,7 +90,7 @@ impl Point {
 
   #[must_use]
   pub fn cross(&self, other: Self) -> f64 {
-    self.x * other.y - self.y * other.x
+    self.x.mul_add(other.y, -self.y * other.x)
   }
 
   #[must_use]
@@ -109,7 +109,7 @@ impl Point {
   #[must_use]
   pub fn rot_ccw(&self, t: f64) -> Self {
     Self {
-      x: self.x * t.cos() - self.y * t.sin(),
+      x: self.x.mul_add(t.cos(), -self.y * t.sin()),
       y: self.x.mul_add(t.sin(), self.y * t.cos()),
     }
   }

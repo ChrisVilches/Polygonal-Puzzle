@@ -100,6 +100,6 @@ impl WriteResult for OutputWriter {
       Self::move_polygons_corner(&mut [&mut p1, &mut p2]);
     }
 
-    Self::render_polygons_image(p1, p2, &format!("{}/{:0>2}.svg", RESULTS_DIR, case_number));
+    Self::render_polygons_image(p1, p2, &format!("{RESULTS_DIR}/{case_number:0>2}.svg"));
   }
 }

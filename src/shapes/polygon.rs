@@ -21,7 +21,6 @@ pub struct Polygon {
 }
 
 impl IntersectsHeuristic for Polygon {
-  #[allow(clippy::integer_division)]
   fn intersects(&self, other: &Self, prev: &mut (i32, i32)) -> bool {
     for i in AlternateIterator::new().take(self.len()) {
       for j in AlternateIterator::new().take(other.len()) {
@@ -74,7 +73,7 @@ impl Desmos for Polygon {
       .collect::<Vec<String>>()
       .join(", ");
 
-    format!("polygon({})", points)
+    format!("polygon({points})")
   }
 }
 
